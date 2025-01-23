@@ -7,28 +7,63 @@ import { useEffect, useRef } from "react";
 
 
 import { Canvas, Rect } from "fabric";
-import ToolBar from './ToolBar';
-import ShapesSettings from './ShapesSettings';
+
+
 
 const DrwaingBoard = () => {
   const canvasRef = useRef(null);
 
   const canvasValue = useSelector((state: RootState) => state.canvas.value)
+
+  const isPanning = useSelector((state: RootState) => state.panning.isPanning);
   const dispatch = useDispatch()
 
   useEffect(() => {
     if (canvasRef.current) {
       const initCanvas: any = new Canvas(canvasRef.current, {
-        width: 500,
-        height: 500,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        backgroundColor:'#121212'
       });
 
-      initCanvas.backgroundColor = "#e1e8e3";
       initCanvas.renderAll();
 
-      console.log(initCanvas)
-
       dispatch(setCanvas(initCanvas))
+
+      initCanvas.on("mouse:down", (event:any) => {
+        if (event.e.altKey || isPanning) {
+          initCanvas.isDragging = true;
+          initCanvas.selection = false;
+          initCanvas.lastPosX = event.e.clientX;
+          initCanvas.lastPosY = event.e.clientY;
+        }
+      });
+
+      initCanvas.on("mouse:move", (event:any) => {
+        if (initCanvas.isDragging) {
+          const vpt = initCanvas.viewportTransform!;
+          vpt[4] += event.e.clientX - initCanvas.lastPosX!;
+          vpt[5] += event.e.clientY - initCanvas.lastPosY!;
+          initCanvas.requestRenderAll();
+          initCanvas.lastPosX = event.e.clientX;
+          initCanvas.lastPosY = event.e.clientY;
+        }
+      });
+
+      initCanvas.on("mouse:up", () => {
+        initCanvas.isDragging = false;
+        initCanvas.selection = true;
+      });
+
+      initCanvas.on("mouse:wheel", (event:any) => {
+        const delta = event.e.deltaY;
+        const zoom = initCanvas.getZoom();
+        const newZoom = zoom * (delta > 0 ? 0.9 : 1.1);
+        initCanvas.zoomToPoint({ x: event.e.offsetX, y: event.e.offsetY }, newZoom);
+        event.e.preventDefault();
+        event.e.stopPropagation();
+    });
+    
 
       return () => {
         initCanvas.dispose();
@@ -36,18 +71,9 @@ const DrwaingBoard = () => {
     }
   }, []);
 
-  
-
   return (
-    <div className="">
-      
-      <div className=' inline-block sticky text-white left-2 bg-black p-2 rounded-xl'>
-        <ToolBar />
-      </div>
-      <div className=" absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <canvas className="" ref={canvasRef} />
-      </div>
-      <ShapesSettings />
+    <div className="absolute top-0 left-0 -z-10">
+      <canvas className="" ref={canvasRef} />
     </div>
   );
 };
