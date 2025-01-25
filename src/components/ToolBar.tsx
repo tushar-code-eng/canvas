@@ -14,6 +14,7 @@ import WavingHandOutlinedIcon from '@mui/icons-material/WavingHandOutlined';
 import { togglePanning } from "../features/panningSlice";
 
 import { useEffect, useState } from 'react';
+import Cropping from './Cropping';
 
 const ToolBar = () => {
     const canvasValue = useSelector((state: RootState) => state.canvas.value)
@@ -27,8 +28,8 @@ const ToolBar = () => {
     const addRec = () => {
         if (canvasValue) {
             const rectangle = new Rect({
-                top: window.innerHeight / 2,
-                left: window.innerWidth / 2 - 50,
+                top: canvasValue.height/2 ,
+                left: canvasValue.width/2 ,
                 width: 100,
                 height: 60,
                 fill: "transparent", 
@@ -42,8 +43,8 @@ const ToolBar = () => {
     const addCir = () => {
         if (canvasValue) {
             const circle = new Circle({
-                top: window.innerHeight / 2,
-                left: window.innerWidth / 2 - 50,
+                top: canvasValue.height/2 ,
+                left: canvasValue.width/2 ,
                 radius: 50,
                 fill: "transparent", 
                 stroke: "#ffffff",   
@@ -56,8 +57,8 @@ const ToolBar = () => {
     const addTri = () => {
         if (canvasValue) {
             const traingle = new Triangle({
-                top: window.innerHeight / 2,
-                left: window.innerWidth / 2 - 50,
+                top: canvasValue.height/2 ,
+                left: canvasValue.width/2 ,
                 width: 100,
                 height: 60,
                 fill: "#738fcf",
@@ -71,6 +72,7 @@ const ToolBar = () => {
         if (canvasValue) {
             const activeObjects = canvasValue.getActiveObjects();
             if (activeObjects.length > 0) {
+                console.log('runs')
                 activeObjects.forEach((obj) => canvasValue.remove(obj));
                 canvasValue.discardActiveObject();
                 canvasValue.renderAll();
@@ -96,6 +98,9 @@ const ToolBar = () => {
                             <DeleteOutlineOutlinedIcon />
                         </div>
                     }
+                    <div className="hover:bg-[#31303B] p-1 cursor-pointer rounded-xl">
+                        <Cropping />
+                    </div>
                 </div>
             </div>
         </>

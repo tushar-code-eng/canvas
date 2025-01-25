@@ -3,12 +3,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
 import { setCanvas } from '@/features/canvasSlice'
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 
 import { Canvas, Rect } from "fabric";
 
-
+import { SnappingHelpers,clearGuidelines } from './SnappingHelpers';
 
 const DrwaingBoard = () => {
   const canvasRef = useRef(null);
@@ -18,15 +18,25 @@ const DrwaingBoard = () => {
   const isPanning = useSelector((state: RootState) => state.panning.isPanning);
   const dispatch = useDispatch()
 
+  const [guidelines,setGuidelines] = useState([])
+
   useEffect(() => {
     if (canvasRef.current) {
       const initCanvas: any = new Canvas(canvasRef.current, {
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: 500,
+        height: 500,
         backgroundColor:'#121212'
       });
 
       initCanvas.renderAll();
+
+      initCanvas.on("object:moving",(event:any)=>{
+        SnappingHelpers(initCanvas,event.target,guidelines,setGuidelines)
+      })
+
+      initCanvas.on("object:modified",()=>{
+        clearGuidelines(initCanvas)
+      })
 
       dispatch(setCanvas(initCanvas))
 
@@ -72,7 +82,7 @@ const DrwaingBoard = () => {
   }, []);
 
   return (
-    <div className="absolute top-0 left-0 -z-10">
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
       <canvas className="" ref={canvasRef} />
     </div>
   );

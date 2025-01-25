@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import canvasReducer from '../features/canvasSlice';
 import shapeReducer from '@/features/selectedObjectSlice';
 import panningReducer from '@/features/panningSlice'
+import refreshKeyReducer from '@/features/refreshSlice'
 
 import { allowNonSerializableMiddleware } from '../store/middleware';
 
@@ -9,7 +10,8 @@ export const store = configureStore({
     reducer: {
         canvas: canvasReducer,
         shape: shapeReducer,
-        panning: panningReducer
+        panning: panningReducer,
+        refresh: refreshKeyReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
