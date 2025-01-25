@@ -1,30 +1,28 @@
-"use client"
-import DrwaingBoard from "@/components/DrwaingBoard";
-import ToolBar from '../components/ToolBar';
-import ShapesSettings from '../components/ShapesSettings';
-import LayersList from "@/components/LayersList";
-import CanvasSettings from "@/components/CanvasSettings";
-import { useState } from "react";
-import CroppingSettings from "@/components/CroppingSettings";
+import Navbar from "@/components/LandingPage/Navbar"
+import Hero from "@/components/LandingPage/Hero"
+import Features from "@/components/LandingPage/Features"
+import Collaboration from "@/components/LandingPage/Collaboration"
+import Showcase from "@/components/LandingPage/Showcase"
+import Pricing from "@/components/LandingPage/Pricing"
+import Testimonials from "@/components/LandingPage/Testimonials"
+import FAQ from "@/components/LandingPage/FAQ"
+import CTA from "@/components/LandingPage/CTA"
+import Footer from "@/components/LandingPage/Footer"
 
 export default function Home() {
-
-  const [refreshKey, setRefreshKey] = useState(0)
-
-  const handleFramesUpdated = () => {
-    setRefreshKey(prev => prev + 1)
-  }
-
   return (
-    <div className="w-full bg-neutral-800 h-screen">
-      <DrwaingBoard />
-      <div className=' flex p-4'>
-        <ToolBar />
-      </div>
-      <LayersList />
-      <ShapesSettings />
-      <CanvasSettings />
-      <CroppingSettings />
-    </div>
-  );
+    <main className="antialiased text-gray-800 min-h-screen flex flex-col">
+      <Navbar />
+      <Hero />
+      <Features />
+      <Collaboration />
+      <Showcase />
+      <Pricing />
+      <Testimonials />
+      <FAQ />
+      <CTA />
+      <Footer />
+    </main>
+  )
 }
+
