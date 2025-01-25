@@ -36,8 +36,6 @@ const CroppingSettings = () => {
                 return obj.name && obj.name.startsWith("Frame")
             })
 
-            console.log("wow->", framesFromCanvas)
-
             setFrames(framesFromCanvas)
 
             if (framesFromCanvas.length > 0) {
