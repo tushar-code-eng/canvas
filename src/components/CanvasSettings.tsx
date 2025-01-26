@@ -6,12 +6,12 @@ import { useSelector } from "react-redux"
 
 
 const CanvasSettings = () => {
-    const [canvasHeight, setCanvasHeight] = useState(500)
-    const [canvasWidth, setCanvasWidth] = useState(500)
-
+    
     const dispatch = useDispatch()
-
+    
     const canvasValue = useSelector((state: RootState) => state.canvas.value)
+    const [canvasHeight, setCanvasHeight] = useState(canvasValue?.height)
+    const [canvasWidth, setCanvasWidth] = useState(canvasValue?.width)
 
     useEffect(() => {
         if (canvasValue) {
@@ -41,7 +41,7 @@ const CanvasSettings = () => {
     }
 
     return (
-        <div className="bg-[#31303B] w-60 text-white p-2 rounded-xl ml-4 my-4">
+        <div className="bg-[#31303B] text-white p-2 rounded-xl w-full">
             <div className='font-bold'>
                 Frame
             </div>

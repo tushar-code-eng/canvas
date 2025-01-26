@@ -40,18 +40,20 @@ const ToolBar = () => {
         let isDrawing = false;
         let origX: number, origY: number;
 
+
         const handleMouseDown = (o: any) => {
             isDrawing = true;
             var pointer = canvas.getPointer(o.e);
             origX = pointer.x;
             origY = pointer.y;
+            canvas.selection = false
             const rect = new Rect({
                 left: pointer.x,
                 top: pointer.y,
                 width: 0,
                 height: 0,
-                fill: 'transparent',
-                stroke: 'white',
+                fill: 'white',
+                stroke: 'black',
                 strokeWidth: 1,
                 originX: 'center',
                 originY: 'center'
@@ -70,6 +72,9 @@ const ToolBar = () => {
 
         const handleMouseUp = () => {
             isDrawing = false;
+            canvas.selection = true
+            canvas.setActiveObject(canvas.getObjects()[canvas.getObjects().length - 1])
+            setIsRect(false)
         };
 
         canvas.on('mouse:down', handleMouseDown);
@@ -95,15 +100,17 @@ const ToolBar = () => {
             const pointer = canvas.getPointer(o.e);
             origX = pointer.x;
             origY = pointer.y;
+            canvas.selection = false
             const circle = new Circle({
                 left: pointer.x,
                 top: pointer.y,
                 radius: 0,
-                fill: 'transparent',
-                stroke: 'white',
+                fill: 'white',
+                stroke: 'black',
                 strokeWidth: 1,
                 originX: 'center',
-                originY: 'center'
+                originY: 'center',
+                selectable: true
             });
             canvas.add(circle);
         };
@@ -123,6 +130,9 @@ const ToolBar = () => {
 
         const handleMouseUp = () => {
             isDrawing = false;
+            canvas.selection = true
+            canvas.setActiveObject(canvas.getObjects()[canvas.getObjects().length - 1])
+            setIsCircle(false)
         };
 
         canvas.on('mouse:down', handleMouseDown);
@@ -150,11 +160,16 @@ const ToolBar = () => {
             const pointer = canvas.getPointer(o.e);
             origX = pointer.x;
             origY = pointer.y;
+            canvas.selection = false;
+
             const points: [number, number, number, number] = [pointer.x, pointer.y, pointer.x, pointer.y];
             const line = new Line(points, {
-                fill: 'transparent',
-                stroke: 'white',
+                fill: 'white',
+                stroke: 'black',
                 strokeWidth: 1,
+                selectable: true,
+                hasControls: false,
+                evented: true
             });
             canvas.add(line);
         };
@@ -163,7 +178,16 @@ const ToolBar = () => {
             if (!isDrawing) return;
             const pointer = canvas.getPointer(o.e);
             const line = canvas.getObjects()[canvas.getObjects().length - 1] as Line;
-            line.set({ x2: pointer.x, y2: pointer.y });
+
+            // Calculate the angle of the line
+            const angle = Math.atan2(pointer.y - origY, pointer.x - origX);
+            const length = Math.sqrt(Math.pow(pointer.x - origX, 2) + Math.pow(pointer.y - origY, 2));
+
+            // Update the line's endpoint based on the angle and length
+            line.set({
+                x2: origX + length * Math.cos(angle),
+                y2: origY + length * Math.sin(angle)
+            });
             canvas.renderAll();
         };
 
@@ -179,7 +203,7 @@ const ToolBar = () => {
 
             // Calculate line length
             const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-            
+
             // Only create triangle if line has meaningful length
             if (length > 1) {
                 const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
@@ -188,11 +212,15 @@ const ToolBar = () => {
                     left: endX,
                     top: endY,
                     fill: 'white',
+                    stroke: 'black',
                     width: 15,
                     height: 15,
                     angle: angle + 90,
                     originX: 'center',
-                    originY: 'center'
+                    originY: 'center',
+                    selectable: true,
+                    hasControls: true,
+                    evented: true
                 });
 
                 canvas.add(triangle);
@@ -200,14 +228,18 @@ const ToolBar = () => {
                 // Group line and triangle
                 const lineAndArrow = [line, triangle];
                 const group = new Group(lineAndArrow, {
-                    hasControls: true,
-                    hasBorders: true
+                    hasControls: false,
+                    selectable: true
                 });
 
                 canvas.remove(line, triangle);
                 canvas.add(group);
             }
-            
+
+            canvas.selection = true;
+            // canvas.setActiveObject(canvas.getObjects()[canvas.getObjects().length - 1]);
+            setIsLine(false);
+
             canvas.renderAll();
         };
 
@@ -236,8 +268,8 @@ const ToolBar = () => {
                 left: canvas.width / 2,
                 width: 100,
                 height: 60,
-                // fill: "transparent", 
-                stroke: "#ffffff",
+                fill: 'white',
+                stroke: 'black',
                 strokeWidth: 1,
             });
 
@@ -250,8 +282,8 @@ const ToolBar = () => {
                 top: canvas.height / 2,
                 left: canvas.width / 2,
                 radius: 50,
-                // fill: "transparent", 
-                stroke: "#ffffff",
+                fill: 'white',
+                stroke: 'black',
                 strokeWidth: 1,
             });
 
@@ -265,7 +297,8 @@ const ToolBar = () => {
                 left: canvas.width / 2,
                 width: 100,
                 height: 60,
-                fill: "#738fcf",
+                fill: 'white',
+                stroke: 'black',
             });
 
             canvas.add(traingle);
@@ -286,9 +319,9 @@ const ToolBar = () => {
     return (
         <>
             <div className=' inline-block mx-auto'>
-                <div className='flex gap-2 text-white bg-[#232329] p-2 rounded-xl'>
+                <div className='flex gap-2 rounded-xl'>
 
-                    <div className={`hover:bg-[#51505f] ${normal ? 'bg-[#51505f]' : 'bg-transparent'} flex items-center justify-center p-1 cursor-pointer rounded-xl`}
+                    <div className={`hover:bg-[#d8d8d8] ${normal ? 'bg-[#d8d8d8]' : 'bg-transparent'} flex items-center justify-center p-1 cursor-pointer rounded-xl`}
                         onClick={() => {
                             setNormal(!normal)
                             setIsRect(false);
@@ -298,8 +331,8 @@ const ToolBar = () => {
                         {/* <img className='w-full' src={mouse} alt="mouse" /> */}
                         <Mouse />
                     </div>
-                    <div className={`hover:bg-[#51505f] ${isRect ? 'bg-[#51505f]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
-                       onDoubleClick={()=>addRec()}
+                    <div className={`hover:bg-[#d8d8d8] ${isRect ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
+                        onDoubleClick={() => addRec()}
                         onClick={() => {
                             setIsRect(!isRect);
                             setIsCircle(false);
@@ -308,17 +341,17 @@ const ToolBar = () => {
                         }}>
                         <Crop54Icon />
                     </div>
-                    <div className={`hover:bg-[#51505f] ${isCircle ? 'bg-[#51505f]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`} 
-                    onDoubleClick={()=>addCir()}
+                    <div className={`hover:bg-[#d8d8d8] ${isCircle ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
+                        onDoubleClick={() => addCir()}
                         onClick={() => {
-                        setIsCircle(!isCircle);
-                        setIsRect(false);
-                        setIsLine(false);
-                        setNormal(false)
-                    }}>
+                            setIsCircle(!isCircle);
+                            setIsRect(false);
+                            setIsLine(false);
+                            setNormal(false)
+                        }}>
                         <Brightness1OutlinedIcon />
                     </div>
-                    <div className={`hover:bg-[#51505f] ${isLine ? 'bg-[#51505f]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
+                    <div className={`hover:bg-[#d8d8d8] ${isLine ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
                         onClick={() => {
                             setIsLine(!isLine);
                             setIsRect(false);
@@ -327,15 +360,15 @@ const ToolBar = () => {
                         }}>
                         <NorthWestIcon />
                     </div>
-                    <div className="hover:bg-[#31303B] p-1 cursor-pointer rounded-xl" onClick={() => addTri()}>
+                    <div className="hover:bg-[#d8d8d8] p-1 cursor-pointer rounded-xl" onClick={() => addTri()}>
                         <ChangeHistoryOutlinedIcon />
                     </div>
                     {selectedObject &&
-                        <div className="hover:bg-[#31303B] p-1 cursor-pointer rounded-xl" onClick={() => deleteShape()}>
+                        <div className="hover:bg-[#d8d8d8] p-1 cursor-pointer rounded-xl" onClick={() => deleteShape()}>
                             <DeleteOutlineOutlinedIcon />
                         </div>
                     }
-                    <div className="hover:bg-[#31303B] p-1 cursor-pointer rounded-xl">
+                    <div className="hover:bg-[#d8d8d8] p-1 cursor-pointer rounded-xl">
                         <Cropping />
                     </div>
                 </div>

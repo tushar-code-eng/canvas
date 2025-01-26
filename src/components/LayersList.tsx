@@ -156,7 +156,7 @@ const LayersList = () => {
     }, [canvas])
 
     return (
-        <div className='inline-block bg-[#31303B] w-60 text-white rounded-xl ml-4'>
+        <div className='inline-block bg-[#31303B] w-full text-white rounded-xl'>
             <div className='py-3 px-2 font-bold border-b border-neutral-600 flex w-full items-center justify-between'>
                 <div>Layers</div>
                 <div className='flex gap-2'>

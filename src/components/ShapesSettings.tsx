@@ -119,42 +119,59 @@ const ShapesSettings = () => {
     }
 
     return (
+
         selectedObject ?
-            (<div className='bg-[#31303B] w-60 text-white p-2 rounded-xl ml-4 my-4'>
-                <div className='font-bold'>
-                    Canvas
-                </div>
-                {selectedObject && selectedObject.type === "rect" && (
-                    <div className='flex w-full items-center justify-around mt-4'>
-                        <div className='flex items-center justify-between'>
-                            <div>W</div>
-                            <input className='text-center bg-transparent border-none w-20 border-2 px-1' type="text" placeholder='width' value={width} onChange={handleWidthChange} />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                H
+            (
+                <div className=' w-full rounded-xl border-b mb-4 p-2' >
+                    <div className='text-xl font-semibold'>
+                        Properties
+                    </div>
+                    {selectedObject && selectedObject.type === "rect" && (
+                        <div className='mt-3'>
+                            <div className='text-xs'>
+                                Dimensions
                             </div>
-                            <input className='text-center bg-transparent border-none w-20 border-2 px-1' type="text" placeholder='height' value={height} onChange={handleHeightChange} />
+                            <div className='flex w-full items-center justify-between'>
+                                <div className='flex items-center justify-between rounded'>
+                                    <div>W</div>
+                                    <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='width' value={width} onChange={handleWidthChange} />
+                                </div>
+                                <div className="flex items-center justify-between rounded">
+                                    <div>
+                                        H
+                                    </div>
+                                    <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='height' value={height} onChange={handleHeightChange} />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                )}
-                {selectedObject && selectedObject.type === "circle" && (
-                    <div className='flex w-full items-center justify-around mt-4'>
-                        <div className='flex items-center justify-between'>
-                            <div>D</div>
-                            <input className='text-center bg-transparent border-none w-20 border-2 px-1' type="text" placeholder='diameter' value={diameter} onChange={handleDiameterChange} />
+                    )}
+                    {
+                        selectedObject && selectedObject.type === "circle" && (
+                            <div className='flex w-full items-center justify-around mt-4'>
+                                <div className='flex items-center justify-between'>
+                                    <div>D</div>
+                                    <input className='text-center bg-transparent border-none w-20 border-2 px-1' type="text" placeholder='diameter' value={diameter} onChange={handleDiameterChange} />
+                                </div>
+                            </div>
+                        )
+                    }
+                    <div>
+                        <div className=' text-xs mt-3 '>
+                            Colors
                         </div>
+                        <div className='w-[85%] flex items-center justify-between '>
+                            <div>Fill</div>
+                            <input className='cursor-pointer' type="color" value={color} onChange={handleColorChange} />
+                        </div>
+                        <div className='w-[85%] flex items-center justify-between'>
+                            <div>Stroke</div>
+                            <input className='cursor-pointer' type="color" value={strokeColor} onChange={handleStrokeColorChange} />
+                        </div>
+                        
                     </div>
-                )}
-                <div className='w-full items-center justify-around mt-4'>
-                    <div>Background</div>
-                    <input type="color" value={color} onChange={handleColorChange} />
-                </div>
-                <div className='w-full items-center justify-around mt-4'>
-                    <div>Border</div>
-                    <input type="color" value={strokeColor} onChange={handleStrokeColorChange} />
-                </div>
-            </div>) : <></>
+                </div >
+            ) : <></>
+
     )
 }
 
