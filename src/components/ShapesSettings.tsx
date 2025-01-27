@@ -3,6 +3,8 @@ import { RootState } from '../store/store';
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
+import { Gradient, Path, Rect } from 'fabric';
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,7 +26,8 @@ const ShapesSettings = () => {
     // const [selectedObject, setSelectedObject] = useState<any>(null)
     const [width, setWidth] = useState("")
     const [height, setHeight] = useState("")
-    const [diameter, setDiameter] = useState("")
+    const [radiusX, setRadiusX] = useState("")
+    const [radiusY, setRadiusY] = useState("")
     const [color, setColor] = useState("")
     const [strokeColor, setStrokeColor] = useState("#ffffff")
     const [strokeWeight, setStrokeWeight] = useState("")
@@ -37,27 +40,22 @@ const ShapesSettings = () => {
         dispatch(setSelectedShape(object))
         console.log(object)
 
+        setWidth(Math.round(object.width * object.scaleX).toString())
+        setHeight(Math.round(object.height * object.scaleY).toString())
+        setColor(object.fill)
+        setStrokeColor(object.stroke)
+        setStrokeWeight(object.strokeWidth)
         if (object.type === "rect") {
-            setWidth(Math.round(object.width * object.scaleX).toString())
-            setHeight(Math.round(object.height * object.scaleY).toString())
-            setColor(object.fill)
-            setStrokeColor(object.stroke)
-            setDiameter("")
-            setStrokeWeight(object.strokeWidth)
+            setRadiusX("")
+            setRadiusY("")
             setCornerRadiusX(object.rx)
             setCornerRadiusY(object.ry)
         } else if (object.type === "triangle") {
-            setWidth(Math.round(object.width * object.scaleX).toString())
-            setHeight(Math.round(object.height * object.scaleY).toString())
-            setColor(object.fill)
-            setStrokeColor(object.stroke)
-            setDiameter("")
+            setRadiusX("")
+            setRadiusY("")
         } else if (object.type === "circle") {
-            setWidth("")
-            setHeight("")
-            setColor(object.fill)
-            setStrokeColor(object.stroke)
-            setDiameter((Math.round(object.radius * 2 * object.scaleX).toString()))
+            setRadiusX((Math.round(object.width / 2 * object.scaleX).toString()))
+            setRadiusY((Math.round(object.height / 2 * object.scaleY).toString()))
         }
     }
 
@@ -65,7 +63,8 @@ const ShapesSettings = () => {
         setWidth("")
         setHeight("")
         setColor("")
-        setDiameter("")
+        setRadiusX("")
+        setRadiusY("")
         setStrokeColor("")
     }
 
@@ -109,15 +108,34 @@ const ShapesSettings = () => {
             canvasValue?.renderAll();
         }
     }
-    const handleDiameterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // const handleDiameterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const value = e.target.value.replace(/,/g, "");
+    //     const intValue = parseInt(value, 10);
+    //     setWidth(intValue.toString());
+    //     if (selectedObject && selectedObject.type === "rect" && intValue >= 0) {
+    //         selectedObject.set({ width: intValue / selectedObject.scaleX });
+    //         canvasValue?.renderAll();
+    //     }
+    // }
+    const handleRadiusX = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.replace(/,/g, "");
-        const intValue = parseInt(value, 10);
-        setDiameter(intValue.toString());
+        const intValue = parseInt(value, 10) / 2;
+        setRadiusX(intValue.toString());
         if (selectedObject && selectedObject.type === "circle" && intValue >= 0) {
-            selectedObject.set({ radius: intValue / 2 / selectedObject.scaleX });
+            selectedObject.set({ width: intValue * 2 / selectedObject.scaleX });
             canvasValue?.renderAll();
         }
     }
+    const handleRadiusY = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/,/g, "");
+        const intValue = parseInt(value, 10) / 2;   
+        setRadiusY(intValue.toString());
+        if (selectedObject && selectedObject.type === "circle" && intValue >= 0) {
+            selectedObject.set({ scaleY: intValue * 2 / selectedObject.width });
+            canvasValue?.renderAll();
+        }
+    }
+
     const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setColor(value);
@@ -126,7 +144,7 @@ const ShapesSettings = () => {
             canvasValue?.renderAll();
         }
     }
-    
+
     const handleStrokeColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setStrokeColor(value);
@@ -136,27 +154,117 @@ const ShapesSettings = () => {
         }
     }
 
-    const handleStrokeWeightChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
+    const handleStrokeWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        setStrokeColor(value);
+        setStrokeWeight(value);
         if (selectedObject) {
-            selectedObject.set({ stroke: value });
+            selectedObject.set({ strokeWidth: value });
             canvasValue?.renderAll();
         }
+    }
+
+    const handleCornerRadiusX = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setCornerRadiusX(value);
+        if (selectedObject) {
+            selectedObject.set({ rx: value });
+            canvasValue?.renderAll();
+        }
+    }
+
+    const handleCornerRadiusY = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setCornerRadiusY(value);
+        if (selectedObject) {
+            selectedObject.set({ ry: value });
+            canvasValue?.renderAll();
+        }
+    }
+
+    const handleBorderStyle = (value: string) => {
+        if (!selectedObject) return;
+        switch (value) {
+            case "Solid":
+                setBoderStyle("Solid")
+                selectedObject.set({
+                    strokeDashArray: null,
+                });
+                break;
+
+            case "Dashed":
+                setBoderStyle("Dashed")
+                selectedObject.set({
+                    strokeDashArray: [10, 5],
+                });
+                break;
+
+            case "Dotted":
+                setBoderStyle("Dotted")
+                selectedObject.set({
+                    strokeDashArray: [2, 2],
+                });
+                break;
+
+            // case "Gradient":
+            //     setBoderStyle("Gradient")
+            //     selectedObject.set({
+            //         stroke: new Gradient({
+            //             type: "linear",
+            //             gradientUnits: "percentage",
+            //             coords: { x1: 0, y1: 0, x2: 1, y2: 1 },
+            //             colorStops: [
+            //                 { offset: 0, color: "red" },
+            //                 { offset: 1, color: "blue" },
+            //             ],
+            //         }),
+            //     });
+            //     break;
+
+            case "Blur":
+                setBoderStyle("Blur")
+                selectedObject.set({
+                    shadow: {
+                        color: "blue",
+                        blur: 10,
+                        offsetX: 0,
+                        offsetY: 0,
+                    },
+                });
+                break;
+
+            // case "wavy":
+            //     setBoderStyle("Wavy")
+            //     const path = new Path(
+            //         "M10 80 C 40 10, 65 10, 95 80 S 150 150, 180 80",
+            //         {
+            //             fill: "transparent",
+            //             stroke: "blue",
+            //             strokeWidth: 3,
+            //         }
+            //     );
+            //     canvasValue?.remove(selectedObject); // Remove the default rectangle
+            //     canvasValue?.add(path); // Add wavy path
+            //     break;
+
+            default:
+                break;
+        }
+        canvasValue?.renderAll();
+
     }
 
     return (
 
         selectedObject ?
             (
-                <div className=' w-full rounded-xl mb-4' >
+                <div className=' w-full rounded-xl' >
                     <div className='text-xl font-semibold px-2'>
                         Properties
                     </div>
                     <div className='border-b-2 p-2 '>
                         <div className='font-semibold'>Layout</div>
-                        {selectedObject && selectedObject.type === "rect" && (
-                            <div className=''>
+                        {selectedObject && selectedObject.type === "rect" &&
+                            (<div className=''>
                                 <div className='text-xs'>
                                     Dimensions
                                 </div>
@@ -172,23 +280,28 @@ const ShapesSettings = () => {
                                         <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='height' value={height} onChange={handleHeightChange} />
                                     </div>
                                 </div>
-                                {/* <div className='mt-2'>
-                                Stroke Weight
-                            </div>
-                            <div>
-
-                            </div> */}
-                            </div>
-                        )}
+                            </div>)
+                        }
                         {
-                            selectedObject && selectedObject.type === "circle" && (
-                                <div className='flex w-full items-center justify-around mt-4'>
-                                    <div className='flex items-center justify-between'>
-                                        <div>D</div>
-                                        <input className='text-center bg-transparent border-none w-20 border-2 px-1' type="text" placeholder='diameter' value={diameter} onChange={handleDiameterChange} />
+                            selectedObject && selectedObject.type === "circle" &&
+                            (<div className=''>
+                                <div className='text-xs'>
+                                    Radius
+                                </div>
+                                <div className='flex w-full items-center justify-between'>
+                                    <div className='flex items-center justify-between rounded'>
+                                        <div>X</div>
+                                        <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='radiusX' value={radiusX} onChange={handleRadiusX} />
+                                    </div>
+                                    <div className="flex items-center justify-between rounded">
+                                        <div>
+                                            Y
+                                        </div>
+                                        <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='radiusY' value={radiusY} onChange={handleRadiusY} />
                                     </div>
                                 </div>
-                            )
+                            </div>)
+
                         }
 
                         <div className='mt-2'>
@@ -205,73 +318,53 @@ const ShapesSettings = () => {
                     </div>
                     <div className='border-b-2 p-2 '>
                         <div className='font-semibold'>Stroke</div>
-                        {selectedObject && selectedObject.type === "rect" && (
-                            <div className=''>
-                                <div className='text-xs'>
-                                    Dimensions
-                                </div>
-                                <div className='flex w-full items-center justify-between'>
-                                    <div className='flex items-center justify-between rounded'>
-                                        <div>Weight</div>
-                                        <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='Stroke Weight' value={strokeWeight} onChange={handleStrokeWeightChange} />
-                                    </div>
-                                    <div className="flex items-center justify-between rounded">
-                                        <div>
-                                            Style
-                                        </div>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger>{borderStyle}</DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem onClick={()=>setBoderStyle("Blur")}>Blur</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={()=>setBoderStyle("Dashed")}>Dashed</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={()=>setBoderStyle("Dotted")}>Dotted</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={()=>setBoderStyle("Double")}>Double</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={()=>setBoderStyle("Gradient")}>Gradient</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={()=>setBoderStyle("Solid")}>Solid</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={()=>setBoderStyle("Wavy")}>Wavy</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </div>
-                                {/* <div className='mt-2'>
-                                Stroke Weight
-                            </div>
-                            <div>
-
-                            </div> */}
-                            </div>
-
-                        )}
                         <div className=''>
                             <div className='text-xs'>
-                                Corner Radius
+                                Dimensions
                             </div>
                             <div className='flex w-full items-center justify-between'>
                                 <div className='flex items-center justify-between rounded'>
-                                    <div>X</div>
-                                    <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='Stroke Weight' value={cornerRadiusX} onChange={handleWidthChange} />
+                                    <div>Weight</div>
+                                    <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='Stroke Weight' value={strokeWeight} onChange={handleStrokeWeightChange} />
                                 </div>
-                                <div className="flex items-center justify-between rounded">
+                                <div className="flex items-center justify-between rounded gap-4">
                                     <div>
-                                        Y
+                                        Style
                                     </div>
-                                    <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder=' Corner Radius' value={cornerRadiusY} onChange={handleHeightChange} />
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger>{borderStyle}</DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem onClick={() => handleBorderStyle("Blur")}>Blur</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleBorderStyle("Dashed")}>Dashed</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleBorderStyle("Dotted")}>Dotted</DropdownMenuItem>
+                                            {/* <DropdownMenuItem onClick={() => handleBorderStyle("Gradient")}>Gradient</DropdownMenuItem> */}
+                                            <DropdownMenuItem onClick={() => handleBorderStyle("Solid")}>Solid</DropdownMenuItem>
+                                            {/* <DropdownMenuItem onClick={() => handleBorderStyle("Wavy")}>Wavy</DropdownMenuItem> */}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </div>
-                            {/* <div className='mt-2'>
-                                Stroke Weight
-                            </div>
-                            <div>
 
-                            </div> */}
                         </div>
                         {
-                            selectedObject && selectedObject.type === "circle" && (
-                                <div className='flex w-full items-center justify-around mt-4'>
-                                    <div className='flex items-center justify-between'>
-                                        <div>D</div>
-                                        <input className='text-center bg-transparent border-none w-20 border-2 px-1' type="text" placeholder='diameter' value={diameter} onChange={handleDiameterChange} />
+                            selectedObject && selectedObject.type === "rect" && (
+                                <div className=''>
+                                    <div className='text-xs'>
+                                        Corner Radius
                                     </div>
+                                    <div className='flex w-full items-center justify-between'>
+                                        <div className='flex items-center justify-between rounded'>
+                                            <div>X</div>
+                                            <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder='Stroke Weight' value={cornerRadiusX} onChange={handleCornerRadiusX} />
+                                        </div>
+                                        <div className="flex items-center justify-between rounded">
+                                            <div>
+                                                Y
+                                            </div>
+                                            <input className='text-center bg-transparent border-none w-full border-2 px-1' type="text" placeholder=' Corner Radius' value={cornerRadiusY} onChange={handleCornerRadiusY} />
+                                        </div>
+                                    </div>
+
                                 </div>
                             )
                         }

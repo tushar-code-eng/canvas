@@ -57,7 +57,7 @@ const ToolBar = () => {
                 strokeWidth: 1,
                 originX: 'center',
                 originY: 'center',
-                strokeDashArray: [10, 5]
+                // strokeDashArray: [10, 5]
             });
             canvas.add(rect);
         };
@@ -94,7 +94,7 @@ const ToolBar = () => {
         if (!canvas || !isCircle) return;
 
         let isDrawing = false;
-        let origX: number, origY: number;
+        let origX: number, origY: number
 
         const handleMouseDown = (o: any) => {
             isDrawing = true;
@@ -106,8 +106,8 @@ const ToolBar = () => {
                 left: pointer.x,
                 top: pointer.y,
                 radius: 0,
-                fill: 'white',
-                stroke: 'black',
+                fill: '#ffffff',
+                stroke: '#000000',
                 strokeWidth: 1,
                 originX: 'center',
                 originY: 'center',

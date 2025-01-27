@@ -26,6 +26,8 @@ const LayersList = () => {
     const [layers, setLayers] = useState<any[]>([])
     const [selectedLayer, setSelectedLayer] = useState<string | null>(null)
 
+    const [currentLayer, setCurrentLayer] = useState<any | null>(null)
+
     const hideSelectedLayer = (e: any) => {
         if (!selectedLayer || !canvas) return;
 
@@ -123,7 +125,8 @@ const LayersList = () => {
     }
 
     const selectLayerCanvas = (layerId: any) => {
-        const object = canvas?.getObjects().find((obj) => obj.id === layerId)
+        const object: any = canvas?.getObjects().find((obj) => obj.id === layerId)
+        setCurrentLayer(object)
         if (object) {
             canvas?.setActiveObject(object)
             canvas?.renderAll()
@@ -156,8 +159,8 @@ const LayersList = () => {
     }, [canvas])
 
     return (
-        <div className='inline-block bg-[#31303B] w-full text-white rounded-xl'>
-            <div className='py-3 px-2 font-bold border-b border-neutral-600 flex w-full items-center justify-between'>
+        <div className='inline-block w-full  border-b-2 mb-4'>
+            <div className='p-2 font-semibold flex w-full items-center justify-between'>
                 <div>Layers</div>
                 <div className='flex gap-2'>
                     <div className={`${(!selectedLayer || layers[0]?.id === selectedLayer) ? 'opacity-50 pointer-events-none' : ''} cursor-pointer`} onClick={() => moveSelectedLayer("up")} >
@@ -171,9 +174,9 @@ const LayersList = () => {
                     </div>
                 </div>
             </div>
-            <ul className='m-2 mb-6'>
+            <ul className=''>
                 {layers.map((layer) => (
-                    <li key={layer.id} className=' text-white p-1 cursor-pointer' onClick={() => selectLayerCanvas(layer.id)}>
+                    <li key={layer.id} className={`hover:bg-neutral-300 cursor-pointer px-2 py-1 transform ease-in-out delay-200`} onClick={() => selectLayerCanvas(layer.id)}>
                         {layer.type} ({layer.zIndex})
                     </li>
                 ))}
