@@ -52,11 +52,12 @@ const ToolBar = () => {
                 top: pointer.y,
                 width: 0,
                 height: 0,
-                fill: 'white',
-                stroke: 'black',
+                fill: '#ffffff',
+                stroke: '#000000',
                 strokeWidth: 1,
                 originX: 'center',
-                originY: 'center'
+                originY: 'center',
+                strokeDashArray: [10, 5]
             });
             canvas.add(rect);
         };
@@ -268,7 +269,7 @@ const ToolBar = () => {
                 left: canvas.width / 2,
                 width: 100,
                 height: 60,
-                fill: 'white',
+                fill: '#ffffff',
                 stroke: 'black',
                 strokeWidth: 1,
             });
