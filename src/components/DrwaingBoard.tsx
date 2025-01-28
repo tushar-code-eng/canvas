@@ -32,7 +32,8 @@ const DrwaingBoard = () => {
       const initCanvas: any = new Canvas(canvasRef.current, {
         width: width,
         height: height,
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
+        isDrawingMode:false
       });
 
       initCanvas.renderAll();

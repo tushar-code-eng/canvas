@@ -10,8 +10,9 @@ import CanvasSettings from "../CanvasSettings"
 import ShapesSettings from "../ShapesSettings"
 import CroppingSettings from "../CroppingSettings"
 import LayersList from "../LayersList"
+import CanvasBg from "./CanvasBg"
 
-const Sidebar=()=> {
+const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -29,6 +30,10 @@ const Sidebar=()=> {
       >
         <h1 className="text-2xl font-bold border-b py-3 px-2 text-white bg-[#171717]">Shape Designer</h1>
         {/* <CanvasSettings /> */}
+        <div className='text-xl font-semibold px-2'>
+          Properties
+        </div>
+        <CanvasBg />
         <ShapesSettings />
         <LayersList />
         <CroppingSettings />

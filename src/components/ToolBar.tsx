@@ -3,15 +3,16 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
 import { setCanvas } from '@/features/canvasSlice'
-import { Canvas, Circle, Triangle, Rect, Line, Group } from "fabric";
+import { Canvas, Circle, Triangle, Rect, Line, Group, Path, PencilBrush, PatternBrush, Shadow, Text, IText } from "fabric";
 
 import Crop54Icon from "@mui/icons-material/Crop54";
 import Brightness1OutlinedIcon from '@mui/icons-material/Brightness1Outlined';
 import ChangeHistoryOutlinedIcon from '@mui/icons-material/ChangeHistoryOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import RemoveIcon from '@mui/icons-material/Remove';
-
 import NorthWestIcon from '@mui/icons-material/NorthWest';
+import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
+import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
 
 import { togglePanning } from "../features/panningSlice";
 
@@ -33,9 +34,14 @@ const ToolBar = () => {
     const [isRect, setIsRect] = useState(false)
     const [isCircle, setIsCircle] = useState(false)
     const [isLine, setIsLine] = useState(false)
+    const [isPen, setIsPen] = useState(false);
+    const [isText, setIsText] = useState(false)
+    let path: Path | null = null;
+
+    const [isDrawingMode, setIsDrawingMode] = useState(false);
 
     useEffect(() => {
-        if (!canvas || !isRect) return;  // Only run when canvas exists and isRect is true
+        if (!canvas || !isRect) return;
 
         let isDrawing = false;
         let origX: number, origY: number;
@@ -255,6 +261,52 @@ const ToolBar = () => {
         };
     }, [canvas, isLine]);
 
+    // useEffect(() => {
+    //     if (!canvas || !isPen) return;
+
+    //     let isDrawing = false;
+    //     let points: string[] = []; // To store the path points
+
+    //     const handleMouseDown = (o: any) => {
+    //         isDrawing = true;
+    //         const pointer = canvas.getPointer(o.e);
+    //         points = [`M ${pointer.x} ${pointer.y}`]; // Initialize the path with the starting point
+    //         path = new Path(points.join(' '), {
+    //             stroke: '#000000',
+    //             strokeWidth: 2,
+    //             fill: null, // Ensure it's not filled
+    //             selectable: true,
+    //             evented: false,
+    //         });
+    //         canvas.add(path);
+    //     };
+
+    //     const handleMouseMove = (o: any) => {
+    //         if (!isDrawing || !path) return;
+    //         const pointer = canvas.getPointer(o.e);
+    //         points.push(`L ${pointer.x} ${pointer.y}`); // Add the new point to the path
+    //         path.set({ path: points });
+    //         canvas.renderAll();
+    //     };
+
+    //     const handleMouseUp = () => {
+    //         isDrawing = false;
+    //         path = null; // Reset the path variable
+    //         points = []; // Clear the points array
+    //         setIsPen(false); // Optionally disable pen mode after drawing
+    //     };
+
+    //     canvas.on('mouse:down', handleMouseDown);
+    //     canvas.on('mouse:move', handleMouseMove);
+    //     canvas.on('mouse:up', handleMouseUp);
+
+    //     return () => {
+    //         canvas.off('mouse:down', handleMouseDown);
+    //         canvas.off('mouse:move', handleMouseMove);
+    //         canvas.off('mouse:up', handleMouseUp);
+    //     };
+    // }, [canvas, isPen]);
+
     useEffect(() => {
         if (canvas) {
             canvas.defaultCursor = isRect || isCircle || isLine ? 'crosshair' : 'default';
@@ -317,6 +369,41 @@ const ToolBar = () => {
             }
         }
     }
+
+    const toggleDrawingMode = () => {
+        if (!canvas) return
+        setIsPen(!isPen)
+        setIsRect(false);
+        setIsCircle(false);
+        setIsLine(false);
+        setNormal(false);
+        canvas.freeDrawingBrush = new PencilBrush(canvas)
+        canvas.freeDrawingBrush.color = "#32a852"
+        canvas.freeDrawingBrush.width = 10
+        canvas.freeDrawingBrush.shadow = new Shadow({
+            blur: parseInt("5", 10) || 0,
+            offsetX: 0,
+            offsetY: 0,
+            affectStroke: true,
+            color: "#3f93d4",
+        });
+        canvas.isDrawingMode = !canvas.isDrawingMode
+    }
+
+    const addText = () => {
+        if (!canvas) return
+        const text = new IText("Enter Text", {
+            left: 100,
+            top: 100,
+            fontSize: 20,
+            fill: "#000", // Text color
+            editable: true,
+        })
+        canvas.add(text)
+        canvas.setActiveObject(text)
+        canvas.renderAll()
+    }
+
     return (
         <>
             <div className=' inline-block mx-auto'>
@@ -324,10 +411,14 @@ const ToolBar = () => {
 
                     <div className={`hover:bg-[#d8d8d8] ${normal ? 'bg-[#d8d8d8]' : 'bg-transparent'} flex items-center justify-center p-1 cursor-pointer rounded-xl`}
                         onClick={() => {
+                            if (canvas) {
+                                canvas.isDrawingMode = false
+                            }
                             setNormal(!normal)
                             setIsRect(false);
                             setIsCircle(false);
                             setIsLine(false);
+                            setIsPen(false)
                         }}>
                         {/* <img className='w-full' src={mouse} alt="mouse" /> */}
                         <Mouse />
@@ -335,35 +426,69 @@ const ToolBar = () => {
                     <div className={`hover:bg-[#d8d8d8] ${isRect ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
                         onDoubleClick={() => addRec()}
                         onClick={() => {
+                            if (canvas) {
+                                canvas.isDrawingMode = false
+                            }
                             setIsRect(!isRect);
                             setIsCircle(false);
                             setIsLine(false);
                             setNormal(false)
+                            setIsPen(false)
                         }}>
                         <Crop54Icon />
                     </div>
                     <div className={`hover:bg-[#d8d8d8] ${isCircle ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
                         onDoubleClick={() => addCir()}
                         onClick={() => {
+                            if (canvas) {
+                                canvas.isDrawingMode = false
+                            }
                             setIsCircle(!isCircle);
                             setIsRect(false);
                             setIsLine(false);
                             setNormal(false)
+                            setIsPen(false)
                         }}>
                         <Brightness1OutlinedIcon />
                     </div>
                     <div className={`hover:bg-[#d8d8d8] ${isLine ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
                         onClick={() => {
+                            if (canvas) {
+                                canvas.isDrawingMode = false
+                            }
                             setIsLine(!isLine);
                             setIsRect(false);
                             setIsCircle(false);
                             setNormal(false)
+                            setIsPen(false)
                         }}>
                         <NorthWestIcon />
                     </div>
                     <div className="hover:bg-[#d8d8d8] p-1 cursor-pointer rounded-xl" onClick={() => addTri()}>
                         <ChangeHistoryOutlinedIcon />
                     </div>
+                    <div className={`hover:bg-[#d8d8d8] ${isPen ? 'bg-[#d8d8d8]' : 'bg-transparent'} cursor-pointer p-1 rounded-xl`}
+                        onClick={
+                            toggleDrawingMode
+                        }>
+                        <CreateOutlinedIcon />
+                    </div>
+                    <div className={`hover:bg-[#d8d8d8] ${isText ? 'bg-[#d8d8d8]' : 'bg-transparent'} cursor-pointer p-1 rounded-xl`}
+                        onClick={
+                            addText
+                        }>
+                        <TitleOutlinedIcon />
+                    </div>
+                    {/* <div className={`hover:bg-[#d8d8d8] ${isPen ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
+                        onClick={() => {
+                            setIsPen(!isPen);
+                            setIsRect(false);
+                            setIsCircle(false);
+                            setIsLine(false);
+                            setNormal(false);
+                        }}>
+                        <CreateOutlinedIcon />
+                    </div> */}
                     {selectedObject &&
                         <div className="hover:bg-[#d8d8d8] p-1 cursor-pointer rounded-xl" onClick={() => deleteShape()}>
                             <DeleteOutlineOutlinedIcon />

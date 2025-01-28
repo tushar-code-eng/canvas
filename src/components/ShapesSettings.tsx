@@ -3,7 +3,7 @@ import { RootState } from '../store/store';
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { Gradient, Path, Rect } from 'fabric';
+import { Gradient, Path, Rect, Shadow } from 'fabric';
 
 import {
     DropdownMenu,
@@ -34,6 +34,8 @@ const ShapesSettings = () => {
     const [cornerRadiusX, setCornerRadiusX] = useState("")
     const [cornerRadiusY, setCornerRadiusY] = useState("")
     const [borderStyle, setBoderStyle] = useState("Solid")
+    const [shadowColor,setShadowColor] = useState("")
+    const [shadowSpread,setShadowSpread] = useState(5)
 
     const handleObjectSelection = (object: any) => {
         if (!object) return
@@ -128,7 +130,7 @@ const ShapesSettings = () => {
     }
     const handleRadiusY = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.replace(/,/g, "");
-        const intValue = parseInt(value, 10) / 2;   
+        const intValue = parseInt(value, 10) / 2;
         setRadiusY(intValue.toString());
         if (selectedObject && selectedObject.type === "circle" && intValue >= 0) {
             selectedObject.set({ scaleY: intValue * 2 / selectedObject.width });
@@ -253,14 +255,28 @@ const ShapesSettings = () => {
 
     }
 
+    const handleShadowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setShadowColor(value);
+        const shadowValue = new Shadow({
+            blur: parseInt("10", 10) || 0,
+            offsetX: 0,
+            offsetY: 0,
+            affectStroke: true,
+            color: value,
+        });
+        if (selectedObject) {
+            selectedObject.set({ shadow: shadowValue });
+            canvasValue?.renderAll();
+        }
+    }
+
     return (
 
         selectedObject ?
             (
                 <div className=' w-full rounded-xl' >
-                    <div className='text-xl font-semibold px-2'>
-                        Properties
-                    </div>
+
                     <div className='border-b-2 p-2 '>
                         <div className='font-semibold'>Layout</div>
                         {selectedObject && selectedObject.type === "rect" &&
@@ -377,6 +393,23 @@ const ShapesSettings = () => {
                                 <div className='w-[85%] flex items-center justify-between '>
                                     <div>#QHJK18</div>
                                     <input className='cursor-pointer' type="color" value={strokeColor} onChange={handleStrokeColorChange} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className='mt-2'>
+                            <div className='text-xs'>
+                                Shadow
+                            </div>
+                            {/* <div>
+                                <div className='w-[85%] flex items-center justify-between '>
+                                    <div>Spread</div>
+                                    <input className='cursor-pointer' type="number" value={shadowSpread} onChange={handleShadowChange} />
+                                </div>
+                            </div> */}
+                            <div>
+                                <div className='w-[85%] flex items-center justify-between '>
+                                    <div>#QHJK18</div>
+                                    <input className='cursor-pointer' type="color" value={shadowColor} onChange={handleShadowChange} />
                                 </div>
                             </div>
                         </div>
