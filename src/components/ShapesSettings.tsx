@@ -279,7 +279,7 @@ const ShapesSettings = () => {
 
                     <div className='border-b-2 p-2 '>
                         <div className='font-semibold'>Layout</div>
-                        {selectedObject && selectedObject.type === "rect" &&
+                        {selectedObject && (selectedObject.type === "rect") &&
                             (<div className=''>
                                 <div className='text-xs'>
                                     Dimensions

@@ -3,7 +3,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
 import { setCanvas } from '@/features/canvasSlice'
-import { Canvas, Circle, Triangle, Rect, Line, Group, Path, PencilBrush, PatternBrush, Shadow, Text, IText } from "fabric";
+import { Canvas, Circle, Triangle, Rect, Line, Group, Path, PencilBrush, PatternBrush, Shadow, Text, IText, Textbox, Polyline, util } from "fabric";
 
 import Crop54Icon from "@mui/icons-material/Crop54";
 import Brightness1OutlinedIcon from '@mui/icons-material/Brightness1Outlined';
@@ -21,14 +21,16 @@ import Cropping from './Cropping';
 
 import Mouse from '../assets/main/mouse.svg'
 
+interface CustomCanvas extends Canvas {
+    isDragging?: boolean; // Add the isDragging property
+}
+
 const ToolBar = () => {
     const canvas = useSelector((state: RootState) => state.canvas.value)
 
     const selectedObject = useSelector((state: RootState) => state.shape.selectedShape) as any;
 
     const dispatch = useDispatch()
-
-    const isPanning = useSelector((state: RootState) => state.panning.isPanning);
 
     const [normal, setNormal] = useState(true)
     const [isRect, setIsRect] = useState(false)
@@ -39,6 +41,13 @@ const ToolBar = () => {
     let path: Path | null = null;
 
     const [isDrawingMode, setIsDrawingMode] = useState(false);
+
+    let points: { x: number; y: number }[] = [];
+    let isDragging = false; // Custom variable to track dragging state
+
+    const disablePanning = () => {
+        (canvas as CustomCanvas).isDragging = false; // Use the custom interface
+    };
 
     useEffect(() => {
         if (!canvas || !isRect) return;
@@ -153,111 +162,164 @@ const ToolBar = () => {
         };
     }, [canvas, isCircle]);
 
+    let isPanning = false; // Custom variable to track panning state
 
-
+    // Store original panning state
+    const originalPanning = isPanning; // Use the custom variable
 
     useEffect(() => {
         if (!canvas || !isLine) return;
 
-        let isDrawing = false;
-        let origX: number, origY: number;
+        let currentPath: Path | null = null;
+        let points: { x: number; y: number }[] = [];
+
+        // Store original state using a local variable
+        let isCurrentlyDrawing = false;
+
+        const createSmoothLine = (points: { x: number; y: number }[]) => {
+            if (points.length < 2) return '';
+
+            let path = `M ${points[0].x} ${points[0].y}`;
+
+            if (points.length === 2) {
+                path += ` L ${points[1].x} ${points[1].y}`;
+                return path;
+            }
+
+            for (let i = 1; i < points.length - 2; i=i+3) {
+                console.log("x->",points[i].x,"y->",points[i].y)
+                const xc = (points[i].x + points[i + 1].x) / 2;
+                const yc = (points[i].y + points[i + 1].y) / 2;
+                path += `Q ${points[i].x} ${points[i].y}, ${xc} ${yc}`;
+            }
+
+            const n = points.length - 1;
+            path += ` Q ${points[n - 1].x} ${points[n - 1].y}, ${points[n].x} ${points[n].y}`;
+
+            return path;
+        };
+
+        const createArrowhead = (fromX: number, fromY: number, toX: number, toY: number) => {
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            const headLength = 15;
+            const headAngle = Math.PI / 6;
+
+            const x1 = toX - headLength * Math.cos(angle - headAngle);
+            const y1 = toY - headLength * Math.sin(angle - headAngle);
+            const x2 = toX - headLength * Math.cos(angle + headAngle);
+            const y2 = toY - headLength * Math.sin(angle + headAngle);
+
+            return new Path(
+                `M ${toX} ${toY} L ${x1} ${y1} M ${toX} ${toY} L ${x2} ${y2}`,
+                {
+                    stroke: 'black',
+                    fill: '',
+                    strokeWidth: 2
+                }
+            );
+        };
+
+        const updateCurrentPath = () => {
+            if (!currentPath) return;
+
+            const pathString = createSmoothLine(points);
+            currentPath.set({ path: util.makePathSimpler(util.parsePath(pathString)) });
+            canvas.requestRenderAll();
+        };
 
         const handleMouseDown = (o: any) => {
-            isDrawing = true;
-            const pointer = canvas.getPointer(o.e);
-            origX = pointer.x;
-            origY = pointer.y;
-            canvas.selection = false;
+            // Skip if alt key is pressed (for panning) or if it's a right click
+            if (!isLine || (o.e as MouseEvent).altKey || (o.e as MouseEvent).button === 2) return;
 
-            const points: [number, number, number, number] = [pointer.x, pointer.y, pointer.x, pointer.y];
-            const line = new Line(points, {
-                fill: 'white',
-                stroke: 'black',
-                strokeWidth: 1,
-                selectable: true,
-                hasControls: false,
-                evented: true
-            });
-            canvas.add(line);
+            const pointer = canvas.getPointer(o.e);
+
+            if (!currentPath) {
+                // Start new path
+                isCurrentlyDrawing = true;
+                points = [{ x: pointer.x, y: pointer.y }];
+                currentPath = new Path('M 0 0', {
+                    stroke: 'black',
+                    strokeWidth: 2,
+                    fill: '',
+                    selectable: false,
+                    evented: false
+                });
+                canvas.add(currentPath);
+            } else {
+                // Add new point
+                points.push({ x: pointer.x, y: pointer.y });
+                updateCurrentPath();
+            }
         };
 
         const handleMouseMove = (o: any) => {
-            if (!isDrawing) return;
+            if (!currentPath || !isCurrentlyDrawing) return;
+
             const pointer = canvas.getPointer(o.e);
-            const line = canvas.getObjects()[canvas.getObjects().length - 1] as Line;
+            const tempPoints = [...points, { x: pointer.x, y: pointer.y }];
+            console.log("running")
+            const pathString = createSmoothLine(tempPoints);
 
-            // Calculate the angle of the line
-            const angle = Math.atan2(pointer.y - origY, pointer.x - origX);
-            const length = Math.sqrt(Math.pow(pointer.x - origX, 2) + Math.pow(pointer.y - origY, 2));
+            currentPath.set({ path: util.makePathSimpler(util.parsePath(pathString)) });
+            canvas.requestRenderAll();
+        };
 
-            // Update the line's endpoint based on the angle and length
-            line.set({
-                x2: origX + length * Math.cos(angle),
-                y2: origY + length * Math.sin(angle)
+        const handleDblClick = (o: any) => {
+            if (!currentPath || points.length < 2) return;
+
+            const pointer = canvas.getPointer(o.e);
+            points.push({ x: pointer.x, y: pointer.y });
+
+            // Create final smooth path
+            const pathString = createSmoothLine(points);
+            const finalPath = new Path(pathString, {
+                stroke: 'black',
+                strokeWidth: 2,
+                fill: '',
+                selectable: true
             });
-            canvas.renderAll();
-        };
 
-        const handleMouseUp = () => {
-            if (!isDrawing) return;
-            isDrawing = false;
+            // Create arrow using last two points
+            const lastPoint = points[points.length - 1];
+            const secondLastPoint = points[points.length - 2];
+            const arrow = createArrowhead(
+                secondLastPoint.x,
+                secondLastPoint.y,
+                lastPoint.x,
+                lastPoint.y
+            );
 
-            const line = canvas.getObjects()[canvas.getObjects().length - 1] as Line;
-            const endX = line.x2 || 0;
-            const endY = line.y2 || 0;
-            const startX = line.x1 || 0;
-            const startY = line.y1 || 0;
+            // Group path and arrow
+            const group = new Group([finalPath, arrow], {
+                selectable: true,
+                hasControls: true,
+                subTargetCheck: true
+            });
 
-            // Calculate line length
-            const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            canvas.remove(currentPath);
+            canvas.add(group);
+            canvas.requestRenderAll();
 
-            // Only create triangle if line has meaningful length
-            if (length > 1) {
-                const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
-
-                const triangle = new Triangle({
-                    left: endX,
-                    top: endY,
-                    fill: 'white',
-                    stroke: 'black',
-                    width: 15,
-                    height: 15,
-                    angle: angle + 90,
-                    originX: 'center',
-                    originY: 'center',
-                    selectable: true,
-                    hasControls: true,
-                    evented: true
-                });
-
-                canvas.add(triangle);
-
-                // Group line and triangle
-                const lineAndArrow = [line, triangle];
-                const group = new Group(lineAndArrow, {
-                    hasControls: false,
-                    selectable: true
-                });
-
-                canvas.remove(line, triangle);
-                canvas.add(group);
-            }
-
-            canvas.selection = true;
-            // canvas.setActiveObject(canvas.getObjects()[canvas.getObjects().length - 1]);
+            // Reset
+            currentPath = null;
+            points = [];
+            isCurrentlyDrawing = false;
             setIsLine(false);
-
-            canvas.renderAll();
         };
 
+        // Add event listeners
         canvas.on('mouse:down', handleMouseDown);
         canvas.on('mouse:move', handleMouseMove);
-        canvas.on('mouse:up', handleMouseUp);
+        canvas.on('mouse:dblclick', handleDblClick);
 
+        // Cleanup
         return () => {
             canvas.off('mouse:down', handleMouseDown);
             canvas.off('mouse:move', handleMouseMove);
-            canvas.off('mouse:up', handleMouseUp);
+            canvas.off('mouse:dblclick', handleDblClick);
+            if (currentPath) {
+                canvas.remove(currentPath);
+            }
         };
     }, [canvas, isLine]);
 
@@ -391,17 +453,52 @@ const ToolBar = () => {
     }
 
     const addText = () => {
-        if (!canvas) return
-        const text = new IText("Enter Text", {
-            left: 100,
-            top: 100,
-            fontSize: 20,
-            fill: "#000", // Text color
+        if (!canvas) return;
+
+        const text = new Textbox("Enter Text", {
+            left: 300,
+            top: 300,
+            fontSize: 30,
+            fill: "#000",
             editable: true,
-        })
-        canvas.add(text)
-        canvas.setActiveObject(text)
-        canvas.renderAll()
+            textAlign: 'left',
+            width: 150,
+            originX: 'center',
+            originY: 'center',
+            centeredScaling: true,
+        });
+
+        // Show only corner controls and middle controls
+        text.setControlsVisibility({
+            mt: false,  // middle top
+            mb: false,  // middle bottom
+            ml: true,   // middle left
+            mr: true,   // middle right
+            bl: true,   // bottom left
+            br: true,   // bottom right
+            tl: true,   // top left
+            tr: true,   // top right
+            mtr: true,  // rotation control
+        });
+
+        text.on('scaling', function () {
+            const newWidth = text.width * text.scaleX;
+            const newFontSize = text.fontSize * text.scaleX;
+
+            text.set({
+                fontSize: newFontSize,
+                width: newWidth,
+                scaleX: 1,
+                scaleY: 1
+            });
+
+            text.setCoords();
+            canvas.renderAll();
+        });
+
+        canvas.add(text);
+        canvas.setActiveObject(text);
+        canvas.renderAll();
     }
 
     return (
