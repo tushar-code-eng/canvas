@@ -34,7 +34,7 @@ const Page = () => {
       <Sidebar />
       <main className="flex-1 flex flex-col">
         <Toolbar />
-        <DesignCanvas />
+        <DesignCanvas  />
       </main>
     </div>
   )

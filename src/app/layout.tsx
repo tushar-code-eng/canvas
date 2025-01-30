@@ -1,4 +1,4 @@
-import ReduxProvider from "@/components/ReduxProvider";
+import ExtraWrapper from "@/components/ExtraWrapper";
 import "./globals.css";
 export default function RootLayout({
   children,
@@ -7,11 +7,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ReduxProvider>
+      <ExtraWrapper>
         <body>
           {children}
         </body>
-      </ReduxProvider>
+      </ExtraWrapper>
     </html>
   );
 }

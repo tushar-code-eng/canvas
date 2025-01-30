@@ -36,6 +36,10 @@ export default function Navbar() {
                 <Link href="#faq" className="text-neutral-300 hover:text-white transition-colors">
                   FAQ
                 </Link>
+                <Link href="/signIn" className="font-semibold text-neutral-300 border rounded-xl border-neutral-300 px-4 py-2 hover:text-black hover:bg-white hover:border-white transition-colors">
+                  SignIn
+                </Link>
+                
               </div>
             </div>
             <div className="flex md:hidden">

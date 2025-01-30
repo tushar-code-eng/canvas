@@ -13,6 +13,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import NorthWestIcon from '@mui/icons-material/NorthWest';
 import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
+import AirlineStopsIcon from '@mui/icons-material/AirlineStops';
 
 import { togglePanning } from "../features/panningSlice";
 
@@ -20,13 +21,21 @@ import { useEffect, useState } from 'react';
 import Cropping from './Cropping';
 
 import Mouse from '../assets/main/mouse.svg'
+import LineDrawer from './subComponents/CurveLines';
+import useWebSocket from '@/hooks/websocket';
 
 interface CustomCanvas extends Canvas {
     isDragging?: boolean; // Add the isDragging property
 }
 
 const ToolBar = () => {
+    let socketURL = " "
+
+    const socket = useWebSocket(socketURL)
+
     const canvas = useSelector((state: RootState) => state.canvas.value)
+    const ws = useSelector((state: RootState) => state.webSocket.ws)
+
 
     const selectedObject = useSelector((state: RootState) => state.shape.selectedShape) as any;
 
@@ -35,6 +44,7 @@ const ToolBar = () => {
     const [normal, setNormal] = useState(true)
     const [isRect, setIsRect] = useState(false)
     const [isCircle, setIsCircle] = useState(false)
+    const [isStraightLine, setIsStraightLine] = useState(false)
     const [isLine, setIsLine] = useState(false)
     const [isPen, setIsPen] = useState(false);
     const [isText, setIsText] = useState(false)
@@ -162,6 +172,120 @@ const ToolBar = () => {
         };
     }, [canvas, isCircle]);
 
+
+    useEffect(() => {
+        if (!canvas || !isStraightLine) return;
+
+        let isDrawing = false;
+        let origX: number, origY: number;
+
+        const handleMouseDown = (o: any) => {
+            isDrawing = true;
+            const pointer = canvas.getPointer(o.e);
+            origX = pointer.x;
+            origY = pointer.y;
+            canvas.selection = false;
+
+            const points: [number, number, number, number] = [pointer.x, pointer.y, pointer.x, pointer.y];
+            const line = new Line(points, {
+                fill: 'white',
+                stroke: 'black',
+                strokeWidth: 1,
+                selectable: true,
+                hasControls: false,
+                evented: true
+            });
+            canvas.add(line);
+        };
+
+        const handleMouseMove = (o: any) => {
+            if (!isDrawing) return;
+            const pointer = canvas.getPointer(o.e);
+            const line = canvas.getObjects()[canvas.getObjects().length - 1] as Line;
+
+            // Calculate the angle of the line
+            const angle = Math.atan2(pointer.y - origY, pointer.x - origX);
+            const length = Math.sqrt(Math.pow(pointer.x - origX, 2) + Math.pow(pointer.y - origY, 2));
+
+            // Update the line's endpoint based on the angle and length
+            line.set({
+                x2: origX + length * Math.cos(angle),
+                y2: origY + length * Math.sin(angle)
+            });
+            canvas.renderAll();
+        };
+
+        const handleMouseUp = () => {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            const line = canvas.getObjects()[canvas.getObjects().length - 1] as Line;
+            const endX = line.x2 || 0;
+            const endY = line.y2 || 0;
+            const startX = line.x1 || 0;
+            const startY = line.y1 || 0;
+
+            // Calculate line length
+            const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+
+            // Only create triangle if line has meaningful length
+            if (length > 1) {
+                const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+
+                const triangle = new Triangle({
+                    left: endX,
+                    top: endY,
+                    fill: 'white',
+                    stroke: 'black',
+                    width: 15,
+                    height: 15,
+                    angle: angle + 90,
+                    originX: 'center',
+                    originY: 'center',
+                    selectable: true,
+                    hasControls: true,
+                    evented: true
+                });
+
+                canvas.add(triangle);
+
+                // Group line and triangle
+                const lineAndArrow = [line, triangle];
+                const group = new Group(lineAndArrow, {
+                    hasControls: false,
+                    selectable: true
+                });
+
+                canvas.remove(line, triangle);
+                canvas.add(group);
+            }
+
+            canvas.selection = true;
+            // canvas.setActiveObject(canvas.getObjects()[canvas.getObjects().length - 1]);
+            setIsStraightLine(false);
+
+            canvas.renderAll();
+        };
+
+        canvas.on('mouse:down', handleMouseDown);
+        canvas.on('mouse:move', handleMouseMove);
+        canvas.on('mouse:up', handleMouseUp);
+
+        return () => {
+            canvas.off('mouse:down', handleMouseDown);
+            canvas.off('mouse:move', handleMouseMove);
+            canvas.off('mouse:up', handleMouseUp);
+        };
+    }, [canvas, isStraightLine]);
+
+
+
+
+
+
+
+
+
     let isPanning = false; // Custom variable to track panning state
 
     // Store original panning state
@@ -186,8 +310,8 @@ const ToolBar = () => {
                 return path;
             }
 
-            for (let i = 1; i < points.length - 2; i=i+3) {
-                console.log("x->",points[i].x,"y->",points[i].y)
+            for (let i = 1; i < points.length - 2; i = i + 3) {
+                console.log("x->", points[i].x, "y->", points[i].y)
                 const xc = (points[i].x + points[i + 1].x) / 2;
                 const yc = (points[i].y + points[i + 1].y) / 2;
                 path += `Q ${points[i].x} ${points[i].y}, ${xc} ${yc}`;
@@ -228,16 +352,14 @@ const ToolBar = () => {
         };
 
         const handleMouseDown = (o: any) => {
-            // Skip if alt key is pressed (for panning) or if it's a right click
             if (!isLine || (o.e as MouseEvent).altKey || (o.e as MouseEvent).button === 2) return;
 
             const pointer = canvas.getPointer(o.e);
 
             if (!currentPath) {
-                // Start new path
                 isCurrentlyDrawing = true;
                 points = [{ x: pointer.x, y: pointer.y }];
-                currentPath = new Path('M 0 0', {
+                currentPath = new Path(`M ${pointer.x} ${pointer.y}`, {  // Update this line
                     stroke: 'black',
                     strokeWidth: 2,
                     fill: '',
@@ -246,22 +368,58 @@ const ToolBar = () => {
                 });
                 canvas.add(currentPath);
             } else {
-                // Add new point
                 points.push({ x: pointer.x, y: pointer.y });
                 updateCurrentPath();
             }
         };
+
+        // const handleMouseMove = (o: any) => {
+        //     if (!currentPath || !isCurrentlyDrawing) return;
+        //     const pointer = canvas.getPointer(o.e);
+        //     const tempPoints = [...points, { x: pointer.x, y: pointer.y }];
+        //     console.log("running", tempPoints)
+        //     const pathString = createSmoothLine(tempPoints);
+
+        //     currentPath.set({ path: util.makePathSimpler(util.parsePath(pathString)) });
+        //     canvas.requestRenderAll();
+        // };
+
+        // const handleMouseMove = (o: any) => {
+        //     if (!currentPath || !isCurrentlyDrawing) return;
+
+        //     const pointer = canvas.getPointer(o.e);
+        //     const tempPoints = [...points, { x: pointer.x, y: pointer.y }];
+
+        //     // Create a simple path string connecting all points with straight lines
+        //     let pathString = `M ${points[0].x} ${points[0].y}`;
+        //     for (let i = 1; i < tempPoints.length; i++) {
+        //         pathString += ` L ${tempPoints[i].x} ${tempPoints[i].y}`;
+        //     }
+
+        //     // Update the path directly without using util.makePathSimpler
+        //     currentPath.set({ path: pathString });
+        //     canvas.requestRenderAll();
+        // };
 
         const handleMouseMove = (o: any) => {
             if (!currentPath || !isCurrentlyDrawing) return;
 
             const pointer = canvas.getPointer(o.e);
             const tempPoints = [...points, { x: pointer.x, y: pointer.y }];
-            console.log("running")
-            const pathString = createSmoothLine(tempPoints);
 
-            currentPath.set({ path: util.makePathSimpler(util.parsePath(pathString)) });
+            // Create a simple path string connecting all points with straight lines
+            let pathString = `M ${points[0].x} ${points[0].y}`;
+            for (let i = 1; i < tempPoints.length; i++) {
+                pathString += ` L ${tempPoints[i].x} ${tempPoints[i].y}`;
+            }
+
+            // Update the path directly without using util.makePathSimpler
+            currentPath.set({ path: pathString });
             canvas.requestRenderAll();
+        };
+
+        const handleMouseUp = (o: any) => {
+            isCurrentlyDrawing = false;
         };
 
         const handleDblClick = (o: any) => {
@@ -310,12 +468,14 @@ const ToolBar = () => {
         // Add event listeners
         canvas.on('mouse:down', handleMouseDown);
         canvas.on('mouse:move', handleMouseMove);
+        canvas.on('mouse:up', handleMouseUp);
         canvas.on('mouse:dblclick', handleDblClick);
 
         // Cleanup
         return () => {
             canvas.off('mouse:down', handleMouseDown);
             canvas.off('mouse:move', handleMouseMove);
+            canvas.off('mouse:up', handleMouseUp);
             canvas.off('mouse:dblclick', handleDblClick);
             if (currentPath) {
                 canvas.remove(currentPath);
@@ -371,7 +531,7 @@ const ToolBar = () => {
 
     useEffect(() => {
         if (canvas) {
-            canvas.defaultCursor = isRect || isCircle || isLine ? 'crosshair' : 'default';
+            canvas.defaultCursor = isRect || isCircle || isLine || isStraightLine ? 'crosshair' : 'default';
             canvas.renderAll();
         }
     }, [canvas, isRect, isCircle, isLine]);
@@ -389,6 +549,17 @@ const ToolBar = () => {
             });
 
             canvas.add(rectangle);
+
+            if (ws) {
+                const serializedStroke = rectangle.toJSON()
+
+                ws.send(JSON.stringify({
+                    type: 'stroke-created',
+                    strokeData: serializedStroke,
+                    sessionUrl: "http://localhost/5000"
+                }));
+            }
+
         }
     };
     const addCir = () => {
@@ -438,6 +609,7 @@ const ToolBar = () => {
         setIsRect(false);
         setIsCircle(false);
         setIsLine(false);
+        setIsStraightLine(false);
         setNormal(false);
         canvas.freeDrawingBrush = new PencilBrush(canvas)
         canvas.freeDrawingBrush.color = "#32a852"
@@ -512,6 +684,7 @@ const ToolBar = () => {
                                 canvas.isDrawingMode = false
                             }
                             setNormal(!normal)
+                            setIsStraightLine(false);
                             setIsRect(false);
                             setIsCircle(false);
                             setIsLine(false);
@@ -527,6 +700,7 @@ const ToolBar = () => {
                                 canvas.isDrawingMode = false
                             }
                             setIsRect(!isRect);
+                            setIsStraightLine(false);
                             setIsCircle(false);
                             setIsLine(false);
                             setNormal(false)
@@ -541,6 +715,7 @@ const ToolBar = () => {
                                 canvas.isDrawingMode = false
                             }
                             setIsCircle(!isCircle);
+                            setIsStraightLine(false);
                             setIsRect(false);
                             setIsLine(false);
                             setNormal(false)
@@ -548,18 +723,33 @@ const ToolBar = () => {
                         }}>
                         <Brightness1OutlinedIcon />
                     </div>
-                    <div className={`hover:bg-[#d8d8d8] ${isLine ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
+                    <div className={`hover:bg-[#d8d8d8] ${isStraightLine ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
                         onClick={() => {
                             if (canvas) {
                                 canvas.isDrawingMode = false
                             }
-                            setIsLine(!isLine);
+                            setIsStraightLine(!isStraightLine);
+                            setIsLine(false);
                             setIsRect(false);
                             setIsCircle(false);
                             setNormal(false)
                             setIsPen(false)
                         }}>
                         <NorthWestIcon />
+                    </div>
+                    <div className={`hover:bg-[#d8d8d8] ${isLine ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
+                        onClick={() => {
+                            if (canvas) {
+                                canvas.isDrawingMode = false
+                            }
+                            setIsLine(!isLine);
+                            setIsStraightLine(false);
+                            setIsRect(false);
+                            setIsCircle(false);
+                            setNormal(false)
+                            setIsPen(false)
+                        }}>
+                        <AirlineStopsIcon />
                     </div>
                     <div className="hover:bg-[#d8d8d8] p-1 cursor-pointer rounded-xl" onClick={() => addTri()}>
                         <ChangeHistoryOutlinedIcon />
@@ -576,16 +766,7 @@ const ToolBar = () => {
                         }>
                         <TitleOutlinedIcon />
                     </div>
-                    {/* <div className={`hover:bg-[#d8d8d8] ${isPen ? 'bg-[#d8d8d8]' : 'bg-transparent'} p-1 cursor-pointer rounded-xl`}
-                        onClick={() => {
-                            setIsPen(!isPen);
-                            setIsRect(false);
-                            setIsCircle(false);
-                            setIsLine(false);
-                            setNormal(false);
-                        }}>
-                        <CreateOutlinedIcon />
-                    </div> */}
+
                     {selectedObject &&
                         <div className="hover:bg-[#d8d8d8] p-1 cursor-pointer rounded-xl" onClick={() => deleteShape()}>
                             <DeleteOutlineOutlinedIcon />

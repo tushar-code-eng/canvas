@@ -2,10 +2,14 @@
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
+import { useSession, signIn, signOut } from "next-auth/react"
+
 import canvasHero from '../../assets/landingPage/canvasHero.png'
 
 export default function Hero() {
-    const router = useRouter()
+
+
+    const { data: session, status } = useSession()
 
     return (
         <section id="hero" className="bg-neutral-900 min-h-screen pt-16">
@@ -29,7 +33,7 @@ export default function Hero() {
                     <div className="flex justify-center space-x-4 animate__animated animate__fadeInUp animate__delay-1s animate__fadeIn">
                         <div
                             className="cursor-pointer bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium"
-                            onClick={() => router.push('/home')}
+                            onClick={() => signIn("google", { callbackUrl: "/home" })}
                         >
                             Start Creating
                         </div>

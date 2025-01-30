@@ -2,15 +2,11 @@
 import { useSelector } from "react-redux";
 import DrwaingBoard from "../DrwaingBoard";
 import { RootState } from "@/store/store";
-import { useEffect } from "react";
-
 export default function DesignCanvas() {
 
   const canvasBg = useSelector((state: RootState) => state.canvasBg.canvasBgValue);
 
-  useEffect(() => {
-
-  }, [])
+  
 
   return (
     <div className="flex-1 bg-gray-50 p-4 overflow-auto">

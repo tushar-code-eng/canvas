@@ -4,6 +4,8 @@ import shapeReducer from '@/features/selectedObjectSlice';
 import panningReducer from '@/features/panningSlice'
 import refreshKeyReducer from '@/features/refreshSlice'
 import canvasBgReducer from '@/features/canvasBgSlice'
+import webSocketReducer from "@/features/websocketSlice";
+import sessionReducer from '@/features/sessionSlice'
 
 import { allowNonSerializableMiddleware } from '../store/middleware';
 
@@ -13,7 +15,9 @@ export const store = configureStore({
         shape: shapeReducer,
         panning: panningReducer,
         refresh: refreshKeyReducer,
-        canvasBg: canvasBgReducer
+        canvasBg: canvasBgReducer,
+        webSocket: webSocketReducer,
+        session:sessionReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
