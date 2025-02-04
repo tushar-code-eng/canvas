@@ -46,6 +46,7 @@ const ShapesSettings = () => {
         setHeight(Math.round(object.height * object.scaleY).toString())
         setColor(object.fill)
         setStrokeColor(object.stroke)
+        setShadowColor(object.shadow)
         setStrokeWeight(object.strokeWidth)
         if (object.type === "rect") {
             setRadiusX("")
@@ -68,6 +69,7 @@ const ShapesSettings = () => {
         setRadiusX("")
         setRadiusY("")
         setStrokeColor("")
+        setShadowColor("")
     }
 
     useEffect(() => {
@@ -326,7 +328,7 @@ const ShapesSettings = () => {
                             </div>
                             <div>
                                 <div className='w-[85%] flex items-center justify-between '>
-                                    <div>#ockjmn</div>
+                                    <div>{color}</div>
                                     <input className='cursor-pointer' type="color" value={color} onChange={handleColorChange} />
                                 </div>
                             </div>
@@ -391,7 +393,7 @@ const ShapesSettings = () => {
                             </div>
                             <div>
                                 <div className='w-[85%] flex items-center justify-between '>
-                                    <div>#QHJK18</div>
+                                    <div>{strokeColor}</div>
                                     <input className='cursor-pointer' type="color" value={strokeColor} onChange={handleStrokeColorChange} />
                                 </div>
                             </div>
@@ -408,7 +410,7 @@ const ShapesSettings = () => {
                             </div> */}
                             <div>
                                 <div className='w-[85%] flex items-center justify-between '>
-                                    <div>#QHJK18</div>
+                                    <div>{shadowColor}</div>
                                     <input className='cursor-pointer' type="color" value={shadowColor} onChange={handleShadowChange} />
                                 </div>
                             </div>

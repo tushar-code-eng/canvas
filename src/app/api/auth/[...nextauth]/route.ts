@@ -48,6 +48,9 @@ const handler = NextAuth({
             return session;
         },
     },
+    pages: {
+        signIn: '/signIn',  // Use your custom sign-in page
+    },
 });
 
 export { handler as GET, handler as POST }; // Required for Next.js App Router

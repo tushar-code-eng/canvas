@@ -52,42 +52,17 @@ export default function Showcase() {
             imageSrc="/placeholder.svg?height=300&width=400"
           />
           <ShowcaseItem
-            title="Mind Maps"
+            title="Design Maps"
             description="Organize your thoughts visually"
             imageSrc="/placeholder.svg?height=300&width=400"
           />
-          <div className="group animate__animated animate__fadeInUp animate__delay-2s">
-            <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-              <div className="bg-neutral-900 p-6 aspect-video relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-red-500/20 to-orange-500/20"></div>
-                <div className="relative h-full flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <span className="text-sm">Wireframe Example</span>
-                  </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-neutral-900 to-transparent"></div>
-              </div>
-              <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2">UI Wireframes</h3>
-                <p className="text-neutral-600 text-sm">Design user interfaces with our comprehensive wireframe kit</p>
-              </div>
-            </div>
-          </div>
+          
           <ShowcaseItem
-            title="UML Diagrams"
+            title="Wireframes"
             description="Design software architecture effortlessly"
             imageSrc="/placeholder.svg?height=300&width=400"
           />
-          <ShowcaseItem
-            title="Infographics"
-            description="Present data in a visually appealing way"
-            imageSrc="/placeholder.svg?height=300&width=400"
-          />
-          <ShowcaseItem
-            title="Network Diagrams"
-            description="Map out complex network structures"
-            imageSrc="/placeholder.svg?height=300&width=400"
-          />
+          
         </div>
 
         <div className="mt-16 text-center animate__animated animate__fadeIn">

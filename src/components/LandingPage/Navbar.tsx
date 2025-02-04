@@ -13,7 +13,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <Link href="/" className="text-white text-xl font-bold">
-                ShapeFlow
+                FlowDesign
               </Link>
             </div>
             <div className="hidden md:block">
@@ -39,7 +39,7 @@ export default function Navbar() {
                 <Link href="/signIn" className="font-semibold text-neutral-300 border rounded-xl border-neutral-300 px-4 py-2 hover:text-black hover:bg-white hover:border-white transition-colors">
                   SignIn
                 </Link>
-                
+
               </div>
             </div>
             <div className="flex md:hidden">

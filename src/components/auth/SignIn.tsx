@@ -30,7 +30,7 @@ export default function SignInForm() {
     }
 
     const handleGoogleSignIn = () => {
-        signIn("google", { callbackUrl: "/home" })
+        signIn("google", { callbackUrl: "/dashboard" })
     }
 
     return (

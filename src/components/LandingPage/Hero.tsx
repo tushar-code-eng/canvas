@@ -33,7 +33,7 @@ export default function Hero() {
                     <div className="flex justify-center space-x-4 animate__animated animate__fadeInUp animate__delay-1s animate__fadeIn">
                         <div
                             className="cursor-pointer bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium"
-                            onClick={() => signIn("google", { callbackUrl: "/home" })}
+                            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
                         >
                             Start Creating
                         </div>

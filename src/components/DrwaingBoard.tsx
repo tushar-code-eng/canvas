@@ -14,7 +14,7 @@ import axios from 'axios'
 
 import { SnappingHelpers, clearGuidelines } from './SnappingHelpers';
 import useWebSocket from '@/hooks/websocket';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, useParams, usePathname } from 'next/navigation';
 
 const DrwaingBoard = () => {
 
@@ -38,40 +38,43 @@ const DrwaingBoard = () => {
 
   const [guidelines, setGuidelines] = useState([])
 
-  useEffect(() => {
-    const fetchStrokes = async () => {
-      console.log("Fetch Strokes Working")
-      const response = await axios.get(`http://localhost:5000/api/getSession`);
-      if (response.data) {
-        response.data.strokes.forEach((stroke: any) => {
-          util.enlivenObjects(JSON.parse(stroke.strokeData),
-            {
-              reviver: (objects: any) => {
-                console.log("Inside Reviver")
-                objects.forEach((obj: any) => canvas?.add(obj));
-              }
-            }
-          );
-        });
-      }
-    };
+  // useEffect(() => {
+  //   const fetchStrokes = async () => {
+  //     console.log("Fetch Strokes Working")
+  //     const response = await axios.get(`http://localhost:5000/api/getSession`);
+  //     if (response.data) {
+  //       response.data.strokes.forEach((stroke: any) => {
+  //         util.enlivenObjects(JSON.parse(stroke.strokeData),
+  //           {
+  //             reviver: (objects: any) => {
+  //               console.log("Inside Reviver")
+  //               objects.forEach((obj: any) => canvas?.add(obj));
+  //             }
+  //           }
+  //         );
+  //       });
+  //     }
+  //   };
 
-    fetchStrokes();
-  }, []);
+  //   fetchStrokes();
+  // }, []);
+
+  const pathname = usePathname()
 
   useEffect(() => {
-    const fetchSession = async () => {
-      console.log("Fetch Session 1")
-      const url = "http://localhost:5000"
+    const createSession = async () => {
+      const uuid = pathname.split("/")[2]
+      console.log("here is -> ", pathname)
+
       try {
-        let response = await axios.get("http://localhost:5000/api/getSession")
+        // let response = await axios.get(`http://localhost:5000/api/getSession?sessionId=${uuid}`)
 
-        if (!response.data) {
-          response = await axios.post("http://localhost:5000/api/createSession", {
-            url,
-            hostId: "12345",
-          });
-        }
+        // if (!response.data) {
+        const response = await axios.post("http://localhost:5000/api/createSession", {
+          hostId: "12345",
+          sessionId: uuid
+        });
+        // }
 
         console.log(response.data)
 
@@ -83,7 +86,7 @@ const DrwaingBoard = () => {
       }
     }
 
-    fetchSession();
+    createSession();
 
     if (canvasRef.current) {
 

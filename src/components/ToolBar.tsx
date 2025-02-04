@@ -483,52 +483,6 @@ const ToolBar = () => {
         };
     }, [canvas, isLine]);
 
-    // useEffect(() => {
-    //     if (!canvas || !isPen) return;
-
-    //     let isDrawing = false;
-    //     let points: string[] = []; // To store the path points
-
-    //     const handleMouseDown = (o: any) => {
-    //         isDrawing = true;
-    //         const pointer = canvas.getPointer(o.e);
-    //         points = [`M ${pointer.x} ${pointer.y}`]; // Initialize the path with the starting point
-    //         path = new Path(points.join(' '), {
-    //             stroke: '#000000',
-    //             strokeWidth: 2,
-    //             fill: null, // Ensure it's not filled
-    //             selectable: true,
-    //             evented: false,
-    //         });
-    //         canvas.add(path);
-    //     };
-
-    //     const handleMouseMove = (o: any) => {
-    //         if (!isDrawing || !path) return;
-    //         const pointer = canvas.getPointer(o.e);
-    //         points.push(`L ${pointer.x} ${pointer.y}`); // Add the new point to the path
-    //         path.set({ path: points });
-    //         canvas.renderAll();
-    //     };
-
-    //     const handleMouseUp = () => {
-    //         isDrawing = false;
-    //         path = null; // Reset the path variable
-    //         points = []; // Clear the points array
-    //         setIsPen(false); // Optionally disable pen mode after drawing
-    //     };
-
-    //     canvas.on('mouse:down', handleMouseDown);
-    //     canvas.on('mouse:move', handleMouseMove);
-    //     canvas.on('mouse:up', handleMouseUp);
-
-    //     return () => {
-    //         canvas.off('mouse:down', handleMouseDown);
-    //         canvas.off('mouse:move', handleMouseMove);
-    //         canvas.off('mouse:up', handleMouseUp);
-    //     };
-    // }, [canvas, isPen]);
-
     useEffect(() => {
         if (canvas) {
             canvas.defaultCursor = isRect || isCircle || isLine || isStraightLine ? 'crosshair' : 'default';
@@ -673,6 +627,50 @@ const ToolBar = () => {
         canvas.renderAll();
     }
 
+    const groupSelectedObjects = () => {
+        if (!canvas) return;
+
+        const activeObjects = canvas.getActiveObjects();
+
+        if (activeObjects.length > 1) {
+            const group = new Group(activeObjects);
+
+            canvas.add(group);
+            canvas.remove(...activeObjects); 
+            canvas.setActiveObject(group); 
+            canvas.renderAll(); 
+        } else {
+            console.log("Select at least two objects to group.");
+        }
+    }
+
+    const ungroupSelectedObject = () => {
+        if (!canvas) return;
+
+        const activeObject = canvas.getActiveObject();
+
+        if (activeObject && activeObject.type === 'group') { 
+            const group = activeObject as Group; 
+            console.log(group)
+            const objectsInGroup = group._objects; 
+            // const groupPosition = group.getCenterPoint(); 
+
+            objectsInGroup.forEach((obj:any) => {
+                obj.set({
+                    left: obj.left ,
+                    top: obj.top
+                });
+                canvas.add(obj);
+            });
+
+            canvas.remove(group); // Remove the group
+            canvas.discardActiveObject(); // Deselect the group using discardActiveObject
+            canvas.renderAll(); // Re-render the canvas
+        } else {
+            console.log("Select a group to ungroup.");
+        }
+    };
+
     return (
         <>
             <div className=' inline-block mx-auto'>
@@ -772,6 +770,20 @@ const ToolBar = () => {
                             <DeleteOutlineOutlinedIcon />
                         </div>
                     }
+                    <div className={`hover:bg-[#d8d8d8] cursor-pointer p-1 rounded-xl`}
+                        onClick={
+                            groupSelectedObjects
+                            
+                        }>
+                        Group
+                    </div>
+                    <div className={`hover:bg-[#d8d8d8] cursor-pointer p-1 rounded-xl`}
+                        onClick={
+                            ungroupSelectedObject
+                            
+                        }>
+                        Ungroup
+                    </div>
                     <div className="hover:bg-[#d8d8d8] p-1 cursor-pointer rounded-xl">
                         <Cropping />
                     </div>

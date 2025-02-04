@@ -6,8 +6,6 @@ export default function DesignCanvas() {
 
   const canvasBg = useSelector((state: RootState) => state.canvasBg.canvasBgValue);
 
-  
-
   return (
     <div className="flex-1 bg-gray-50 p-4 overflow-auto">
 
