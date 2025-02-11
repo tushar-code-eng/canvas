@@ -4,7 +4,7 @@ import { RootState } from '../store/store';
 
 import { useEffect, useRef, useState } from "react";
 
-import { setCanvas } from '@/features/canvasSlice'
+import { setCanvas, setCanvasState } from '@/features/canvasSlice'
 import { setWebSocket, closeWebSocket } from "@/features/websocketSlice";
 import { setSessionUrl } from '@/features/sessionSlice';
 
@@ -22,16 +22,12 @@ const DrwaingBoard = () => {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const canvas = useSelector((state: RootState) => state.canvas.value)
+  // const canvas = useSelector((state: RootState) => state.canvas.value)
   const ws = useSelector((state: RootState) => state.webSocket)
   // const sessionUrl = useSearchParams().get('sessionUrl');
 
   const isPanning = useSelector((state: RootState) => state.panning.isPanning);
   const dispatch = useDispatch()
-
-  const router = useRouter();
-
-  const [loading, setLoading] = useState(true)
 
   // const [isDrawing, setIsDrawing] = useState(false);
   // const [currentShape, setCurrentShape] = useState<Rect | null>(null);
@@ -104,6 +100,44 @@ const DrwaingBoard = () => {
         isDrawingMode: false
       });
 
+      const fetchCanvasData = async () => {
+        try {
+          const response = await axios.get("http://localhost:5000/get-canvas");
+          const data = response.data;
+          
+          if (data.canvasData) {
+            // Parse the canvas data if it's a string
+            const canvasData = typeof data.canvasData === 'string' 
+              ? JSON.parse(data.canvasData) 
+              : data.canvasData;
+      
+            // Wait for the canvas to load completely
+            await new Promise((resolve) => {
+              initCanvas.loadFromJSON(canvasData, () => {
+                initCanvas.renderAll();
+                resolve;
+              });
+            });
+      
+            // Update the canvas in your state after loading
+            dispatch(setCanvas(initCanvas));
+            console.log("✅ Canvas restored from Redis!");
+            
+            // Force a re-render after loading
+            initCanvas.requestRenderAll();
+          }
+        } catch (error) {
+          console.error("❌ Failed to load canvas:", error);
+          console.error("Error details:", (error as Error).message);
+        }
+      };
+
+      fetchCanvasData();
+
+      initCanvas.on('after:render', () => {
+        console.log("Canvas rendered");
+      });
+
       initCanvas.renderAll();
 
       initCanvas.on("object:moving", (event: any) => {
@@ -160,7 +194,7 @@ const DrwaingBoard = () => {
           util.enlivenObjects([strokeData],
             {
               reviver: (objects: any) => {
-                objects.forEach((obj: any) => canvas?.add(obj));
+                objects.forEach((obj: any) => initCanvas?.add(obj));
               }
 
             }
@@ -168,8 +202,20 @@ const DrwaingBoard = () => {
         }
       };
 
+      const updateCanvasState = () => {
+        dispatch(setCanvasState(initCanvas.toJSON()));
+      };
+
+      initCanvas.on("object:modified", updateCanvasState);
+      initCanvas.on("object:added", updateCanvasState);
+      initCanvas.on("object:removed", updateCanvasState);
+
 
       return () => {
+        initCanvas.dispose();
+        initCanvas.off("object:modified", updateCanvasState);
+        initCanvas.off("object:added", updateCanvasState);
+        initCanvas.off("object:removed", updateCanvasState);
         initCanvas.dispose();
         dispatch(closeWebSocket());
       };

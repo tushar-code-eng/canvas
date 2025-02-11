@@ -172,7 +172,6 @@ const ToolBar = () => {
         };
     }, [canvas, isCircle]);
 
-
     useEffect(() => {
         if (!canvas || !isStraightLine) return;
 
