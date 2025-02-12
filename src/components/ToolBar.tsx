@@ -2,26 +2,21 @@
 
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
-import { setCanvas } from '@/features/canvasSlice'
-import { Canvas, Circle, Triangle, Rect, Line, Group, Path, PencilBrush, PatternBrush, Shadow, Text, IText, Textbox, Polyline, util } from "fabric";
+import { Canvas, Circle, Triangle, Rect, Line, Group, Path, PencilBrush, Shadow, Textbox, util } from "fabric";
 
 import Crop54Icon from "@mui/icons-material/Crop54";
 import Brightness1OutlinedIcon from '@mui/icons-material/Brightness1Outlined';
 import ChangeHistoryOutlinedIcon from '@mui/icons-material/ChangeHistoryOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import RemoveIcon from '@mui/icons-material/Remove';
 import NorthWestIcon from '@mui/icons-material/NorthWest';
 import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
 import AirlineStopsIcon from '@mui/icons-material/AirlineStops';
 
-import { togglePanning } from "../features/panningSlice";
-
 import { useEffect, useState } from 'react';
 import Cropping from './Cropping';
 
-import Mouse from '../assets/main/mouse.svg'
-import LineDrawer from './subComponents/CurveLines';
+import Mouse from '../assets/main/mouse.svg';
 import useWebSocket from '@/hooks/websocket';
 
 interface CustomCanvas extends Canvas {
@@ -29,17 +24,13 @@ interface CustomCanvas extends Canvas {
 }
 
 const ToolBar = () => {
-    let socketURL = " "
-
-    const socket = useWebSocket(socketURL)
+    const socketURL = " "
 
     const canvas = useSelector((state: RootState) => state.canvas.value)
     const ws = useSelector((state: RootState) => state.webSocket.ws)
 
 
     const selectedObject = useSelector((state: RootState) => state.shape.selectedShape) as any;
-
-    const dispatch = useDispatch()
 
     const [normal, setNormal] = useState(true)
     const [isRect, setIsRect] = useState(false)
@@ -48,16 +39,6 @@ const ToolBar = () => {
     const [isLine, setIsLine] = useState(false)
     const [isPen, setIsPen] = useState(false);
     const [isText, setIsText] = useState(false)
-    let path: Path | null = null;
-
-    const [isDrawingMode, setIsDrawingMode] = useState(false);
-
-    let points: { x: number; y: number }[] = [];
-    let isDragging = false; // Custom variable to track dragging state
-
-    const disablePanning = () => {
-        (canvas as CustomCanvas).isDragging = false; // Use the custom interface
-    };
 
     useEffect(() => {
         if (!canvas || !isRect) return;
@@ -68,7 +49,7 @@ const ToolBar = () => {
 
         const handleMouseDown = (o: any) => {
             isDrawing = true;
-            var pointer = canvas.getPointer(o.e);
+            let pointer = canvas.getPointer(o.e);
             origX = pointer.x;
             origY = pointer.y;
             canvas.selection = false
@@ -89,8 +70,8 @@ const ToolBar = () => {
 
         const handleMouseMove = (o: any) => {
             if (!isDrawing) return;
-            var pointer = canvas.getPointer(o.e);
-            var rect = canvas.getObjects()[canvas.getObjects().length - 1];
+            let pointer = canvas.getPointer(o.e);
+            let rect = canvas.getObjects()[canvas.getObjects().length - 1];
             rect.set({ width: Math.abs(pointer.x - origX), height: Math.abs(pointer.y - origY) });
             rect.set({ left: Math.min(pointer.x, origX) + rect.width / 2, top: Math.min(pointer.y, origY) + rect.height / 2 });
             canvas.renderAll();
@@ -277,18 +258,7 @@ const ToolBar = () => {
         };
     }, [canvas, isStraightLine]);
 
-
-
-
-
-
-
-
-
-    let isPanning = false; // Custom variable to track panning state
-
-    // Store original panning state
-    const originalPanning = isPanning; // Use the custom variable
+    const isPanning = false; // Custom variable to track panning state
 
     useEffect(() => {
         if (!canvas || !isLine) return;

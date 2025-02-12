@@ -3,12 +3,8 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
 import { useDispatch } from 'react-redux'
 
 import { setCanvasBg } from '@/features/canvasBgSlice'
@@ -16,8 +12,6 @@ import { setCanvasBg } from '@/features/canvasBgSlice'
 const CanvasBg = () => {
 
     const [canvasBgName, setCanvasBgName] = useState("Dotted")
-
-    const canvasBg = useSelector((state: RootState) => state.canvasBg.canvasBgValue)
 
     const dispatch = useDispatch()
 

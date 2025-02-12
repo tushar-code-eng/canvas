@@ -16,7 +16,6 @@ const useWebSocket = (socketURL: string) => {
         }
 
         ws.onmessage = (event) => {
-            const stroke = JSON.parse(event.data);
             // Render incoming stroke on the canvas
         };
 

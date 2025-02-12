@@ -18,7 +18,7 @@ export const SnappingHelpers = (canvasValue:any, obj: any, guidelines: any, setG
     const centerX = left + (obj.width * obj.scaleX) / 2
     const centerY = top + (obj.height * obj.scaleY) / 2
 
-    let newGuidelines = []
+    const newGuidelines = []
 
     clearGuidelines(canvasValue)
 

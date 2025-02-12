@@ -58,7 +58,7 @@ export default function Collaboration() {
                       <div className="bg-neutral-800 rounded px-3 py-2 text-sm">Adding new flowchart section...</div>
                     </div>
                     <div className="flex items-center space-x-2 justify-end">
-                      <div className="bg-blue-500 rounded px-3 py-2 text-sm">Great! I'll work on the connections.</div>
+                      <div className="bg-blue-500 rounded px-3 py-2 text-sm">Great! I&apos;ll work on the connections.</div>
                       <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm font-medium">
                         SK
                       </div>

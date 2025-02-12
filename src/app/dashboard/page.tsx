@@ -4,7 +4,7 @@ import { Sidebar } from '@/components/Dashboard/Sidebar';
 import { Navbar } from '@/components/Dashboard/Navbar';
 import { TemplateCard } from '@/components/Dashboard/TemplateCard';
 import { RecentWork } from '@/components/Dashboard/RecentWork';
-import { BarChart as FlowChart, Palette, Box, GitBranch, Menu } from 'lucide-react';
+import { BarChart as FlowChart, Palette, Box, GitBranch } from 'lucide-react';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

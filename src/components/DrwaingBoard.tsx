@@ -6,24 +6,20 @@ import { useEffect, useRef, useState } from "react";
 
 import { setCanvas, setCanvasState } from '@/features/canvasSlice'
 import { setWebSocket, closeWebSocket } from "@/features/websocketSlice";
-import { setSessionUrl } from '@/features/sessionSlice';
 
-import { Canvas, Rect, Line, util, FabricObject } from "fabric";
+import { Canvas, util } from "fabric";
 
 import axios from 'axios'
 
 import { SnappingHelpers, clearGuidelines } from './SnappingHelpers';
 import useWebSocket from '@/hooks/websocket';
-import { useRouter, useSearchParams, useParams, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 const DrwaingBoard = () => {
-
-  const socket = useWebSocket(`ws://localhost:5000`)
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // const canvas = useSelector((state: RootState) => state.canvas.value)
-  const ws = useSelector((state: RootState) => state.webSocket)
   // const sessionUrl = useSearchParams().get('sessionUrl');
 
   const isPanning = useSelector((state: RootState) => state.panning.isPanning);

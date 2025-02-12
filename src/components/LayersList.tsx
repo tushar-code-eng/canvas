@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Canvas, FabricObject } from 'fabric'
+import { Canvas } from 'fabric'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
-import zIndex from '@mui/material/styles/zIndex';
 
 import ArrowUpwardOutlinedIcon from '@mui/icons-material/ArrowUpwardOutlined';
 import ArrowDownwardOutlinedIcon from '@mui/icons-material/ArrowDownwardOutlined';
@@ -28,7 +27,7 @@ const LayersList = () => {
 
     const [currentLayer, setCurrentLayer] = useState<any | null>(null)
 
-    const hideSelectedLayer = (e: any) => {
+    const hideSelectedLayer = () => {
         if (!selectedLayer || !canvas) return;
 
         const object = canvas.getObjects().find((obj) => obj.id === selectedLayer)
@@ -169,7 +168,7 @@ const LayersList = () => {
                     <div className={`${(!selectedLayer || layers[layers.length - 1]?.id === selectedLayer) ? 'opacity-50 pointer-events-none' : ''} cursor-pointer`} onClick={() => moveSelectedLayer("down")} >
                         <ArrowDownwardOutlinedIcon />
                     </div>
-                    <div className={` cursor-pointer`} onClick={(e) => hideSelectedLayer(e)} >
+                    <div className={` cursor-pointer`} onClick={() => hideSelectedLayer()} >
                         <RemoveRedEyeOutlinedIcon />
                     </div>
                 </div>

@@ -1,7 +1,6 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Square, Circle, Minus, Type, Image, Share2, MoreHorizontal } from "lucide-react"
-import { useState } from "react"
+import {  Share2, MoreHorizontal } from "lucide-react"
 
 import ToolBar from "../ToolBar"
 

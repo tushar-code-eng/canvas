@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const RecentWork = () => {
 
@@ -32,7 +33,7 @@ const RecentWork = () => {
             className="group relative bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors cursor-pointer"
           >
             <div className="aspect-[14/8] overflow-hidden">
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1581291519195-ef11498d1cf2?auto=format&fit=crop&q=80&w=500"
                 alt={project.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

@@ -1,13 +1,9 @@
-import { setHeight, setWidth } from "@/features/canvasSlice"
 import { RootState } from "@/store/store"
 import { useEffect, useState } from "react"
-import { useDispatch } from "react-redux"
 import { useSelector } from "react-redux"
 
 
 const CanvasSettings = () => {
-    
-    const dispatch = useDispatch()
     
     const canvasValue = useSelector((state: RootState) => state.canvas.value)
     const [canvasHeight, setCanvasHeight] = useState(canvasValue?.height)

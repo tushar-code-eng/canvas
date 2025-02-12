@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bell, Settings, User, Menu, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 
 interface NavbarProps {
   sidebarOpen: boolean;
@@ -33,7 +34,7 @@ const Navbar = ({ sidebarOpen, onSidebarOpen }: NavbarProps) => {
             <Settings className="h-5 w-5" />
           </button>
           <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center">
-            <img src={session.data?.user?.image || '/default-image.png'} alt="" />
+            <Image src={session.data?.user?.image || '/default-image.png'} alt="" />
           </div>
         </div>
 

@@ -3,14 +3,12 @@ import { RootState } from '../store/store';
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { Gradient, Path, Rect, Shadow } from 'fabric';
+import { Shadow } from 'fabric';
 
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -35,7 +33,6 @@ const ShapesSettings = () => {
     const [cornerRadiusY, setCornerRadiusY] = useState("")
     const [borderStyle, setBoderStyle] = useState("Solid")
     const [shadowColor,setShadowColor] = useState("")
-    const [shadowSpread,setShadowSpread] = useState(5)
 
     const handleObjectSelection = (object: any) => {
         if (!object) return

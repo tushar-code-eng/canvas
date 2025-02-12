@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { ChevronLeft, ChevronRight, Star } from "lucide-react"
+import Image from "next/image"
 
 const testimonials = [
   {
@@ -65,7 +66,7 @@ export default function Testimonials() {
                 <div key={index} className="w-full flex-shrink-0">
                   <div className="bg-white p-8 rounded-xl shadow-lg max-w-3xl mx-auto">
                     <div className="flex items-center mb-6">
-                      <img
+                      <Image
                         src={testimonial.image || "/placeholder.svg"}
                         alt={testimonial.name}
                         className="w-16 h-16 rounded-full mr-4"
@@ -77,7 +78,7 @@ export default function Testimonials() {
                         </p>
                       </div>
                     </div>
-                    <p className="text-lg mb-4">"{testimonial.quote}"</p>
+                    <p className="text-lg mb-4">&quot;{testimonial.quote}&quot;</p>
                     <div className="flex text-yellow-400">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <Star key={i} className="w-5 h-5 fill-current" />

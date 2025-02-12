@@ -1,15 +1,12 @@
 "use client"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-import { useSession, signIn, signOut } from "next-auth/react"
+import { signIn } from "next-auth/react"
 
 import canvasHero from '../../assets/landingPage/canvasHero.png'
+import Image from "next/image"
 
 export default function Hero() {
-
-
-    const { data: session, status } = useSession()
 
     return (
         <section id="hero" className="bg-neutral-900 min-h-screen pt-16">
@@ -48,7 +45,7 @@ export default function Hero() {
 
                 <div className="mt-16 relative animate__animated animate__fadeIn animate__delay-2s">
                     <div className="bg-neutral-800/50 backdrop-blur-sm p-4 rounded-xl shadow-2xl">
-                        <img className="rounded-xl" src={canvasHero.src} alt="" />
+                        <Image className="rounded-xl" src={canvasHero.src} alt="" />
                         {/* <div className="relative bg-neutral-900 rounded-lg p-8 aspect-video flex items-center justify-center">
                             <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 rounded-lg"></div>
                             

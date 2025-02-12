@@ -2,11 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { FileImage, Layers, Settings, Menu } from "lucide-react"
-import CanvasSettings from "../CanvasSettings"
+import {  Menu } from "lucide-react"
 import ShapesSettings from "../ShapesSettings"
 import CroppingSettings from "../CroppingSettings"
 import LayersList from "../LayersList"
