@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  distDir: "./dist", // Changes the build output directory to `./dist/`.
   typescript: {
     ignoreBuildErrors: true, // Ignore TypeScript errors during build
   },
